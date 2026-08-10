@@ -4,9 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Meu Hub de Apps</title>
+    <link rel="stylesheet" href="style.css">
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#0f172a">
-    <link rel="stylesheet" href="style.css">
     <!-- Fonte moderna do Google -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
 </head>
@@ -31,51 +31,116 @@
         </div>
     </main>
 
-    <!-- Painel com os Cards (Dashboard) -->
+    <!-- Painel Principal (Dashboard) -->
     <main id="dashboard-section" class="hidden">
         <header class="glass-header">
             <div>
                 <h2>Meus Apps</h2>
-                <p>Selecione um projeto</p>
+                <p>Selecione um projeto ou gerencie sua agenda</p>
             </div>
-            <button id="logout-btn" class="glass-button small">Sair</button>
+            <div style="display: flex; gap: 10px; align-items: center;">
+                <button id="notify-btn" class="glass-button small">🔔 Ativar Avisos</button>
+                <button id="logout-btn" class="glass-button small">Sair</button>
+            </div>
         </header>
 
-        <div class="cards-grid">
-            <!-- Card 1 -->
+        <!-- MENU DE NAVEGAÇÃO ENTRE ABAS -->
+        <div style="display: flex; gap: 15px; margin-bottom: 25px;">
+            <button id="tab-apps" class="glass-button primary">🚀 Aplicativos</button>
+            <button id="tab-agenda" class="glass-button">📅 Agenda & Retornos</button>
+        </div>
+
+        <!-- SEÇÃO 1: CARDS DOS APLICATIVOS E LINKS -->
+        <div id="apps-container" class="cards-grid">
+            <!-- CRM -->
             <div class="glass-card">
                 <div class="card-content">
-                    <div class="icon">📊</div>
-                    <h3>Financeiro</h3>
-                    <p>Dashboard e controle de planilhas.</p>
+                    <div class="icon">📈</div>
+                    <h3>CRM</h3>
+                    <p>Acesse o painel principal do CRM.</p>
                 </div>
                 <div class="card-action">
-                    <button class="glass-button full">Acessar App</button>
+                    <a href="https://top.crm5.com.br/" target="_blank" class="glass-button full">Acessar CRM</a>
                 </div>
             </div>
 
-            <!-- Card 2 -->
+            <!-- MAPA NEXUS -->
             <div class="glass-card">
                 <div class="card-content">
-                    <div class="icon">📝</div>
-                    <h3>Cadastro Clientes</h3>
-                    <p>Gerencie contatos no App Script.</p>
+                    <div class="icon">🗺️</div>
+                    <h3>MAPA NEXUS</h3>
+                    <p>Mapeamento e acompanhamento Nexus.</p>
                 </div>
                 <div class="card-action">
-                    <button class="glass-button full">Acessar App</button>
+                    <a href="https://script.google.com/macros/s/AKfycbxUsBW0gr-zTXQOwjAzBMM587IPbVhE1QXK16aNFBSl5IRplGgmNuasA1FJrZQjDNIIDQ/exec" target="_blank" class="glass-button full">Abrir Mapa</a>
                 </div>
             </div>
 
-            <!-- Card 3 -->
+            <!-- TOP NEXUS -->
             <div class="glass-card">
                 <div class="card-content">
-                    <div class="icon">📦</div>
-                    <h3>Estoque</h3>
-                    <p>Verificar fluxo de materiais.</p>
+                    <div class="icon">⚡</div>
+                    <h3>TOP NEXUS</h3>
+                    <p>Sistema principal de automação.</p>
                 </div>
                 <div class="card-action">
-                    <button class="glass-button full">Acessar App</button>
+                    <a href="https://script.google.com/macros/s/AKfycbx5S_7-KBX4iXR69OeoliWoXCv9l-lN5t9STe_DmxeR_7W--wULVOxdu-R3kht3BQ0X/exec" target="_blank" class="glass-button full">Abrir Top Nexus</a>
                 </div>
+            </div>
+
+            <!-- BOOK B2B -->
+            <div class="glass-card">
+                <div class="card-content">
+                    <div class="icon">💼</div>
+                    <h3>BOOK B2B</h3>
+                    <p>Material e documentação B2B.</p>
+                </div>
+                <div class="card-action">
+                    <a href="https://drive.google.com/file/d/1E3dW2tx5jH9lxnNFs1C1rFdxbWYxjBiA/view?usp=sharing" target="_blank" class="glass-button full">Abrir Book</a>
+                </div>
+            </div>
+
+            <!-- BOOK B2C -->
+            <div class="glass-card">
+                <div class="card-content">
+                    <div class="icon">🛍️</div>
+                    <h3>BOOK B2C</h3>
+                    <p>Material e documentação B2C.</p>
+                </div>
+                <div class="card-action">
+                    <a href="https://drive.google.com/file/d/1j8pgqBGL8TILckJfPEaMpg4CfkITXKxA/view?usp=sharin" target="_blank" class="glass-button full">Abrir Book</a>
+                </div>
+            </div>
+
+            <!-- BOOK AVANÇADO -->
+            <div class="glass-card">
+                <div class="card-content">
+                    <div class="icon">🚀</div>
+                    <h3>BOOK AVANÇADO</h3>
+                    <p>Documentação e treinos avançados.</p>
+                </div>
+                <div class="card-action">
+                    <a href="https://drive.google.com/file/d/1K2n0_5AXRyoIzl5CqgEo1VPobbXCHVzq/view?usp=sharing" target="_blank" class="glass-button full">Abrir Book</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- SEÇÃO 2: TELA DA AGENDA DE CLIENTES -->
+        <div id="agenda-container" class="hidden">
+            <div class="glass-card" style="padding: 25px; margin-bottom: 25px;">
+                <h3 style="margin-bottom: 15px;">Novo Agendamento</h3>
+                <form id="agenda-form" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+                    <input type="text" id="cliente-nome" placeholder="Nome do Cliente" required style="padding: 12px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.3); color: white;">
+                    <input type="tel" id="cliente-fone" placeholder="Telefone / WhatsApp" required style="padding: 12px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.3); color: white;">
+                    <input type="datetime-local" id="cliente-data" required style="padding: 12px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.3); color: white;">
+                    <input type="text" id="cliente-obs" placeholder="Observações do Retorno" style="padding: 12px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.3); color: white;">
+                    <button type="submit" class="glass-button primary" style="grid-column: 1 / -1;">Salvar Lembrete</button>
+                </form>
+            </div>
+
+            <h3 style="margin-bottom: 15px;">Próximos Retornos</h3>
+            <div id="lista-agendamentos" style="display: flex; flex-direction: column; gap: 15px;">
+                <!-- Os agendamentos do Firebase aparecerão aqui -->
             </div>
         </div>
     </main>
