@@ -7,11 +7,9 @@
     <link rel="stylesheet" href="style.css">
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#0f172a">
-    <!-- Fonte moderna do Google -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
 </head>
 <body>
-    <!-- Efeitos de luz ao fundo (Glassmorphism) -->
     <div class="background-shapes">
         <div class="shape shape-1"></div>
         <div class="shape shape-2"></div>
@@ -36,7 +34,7 @@
         <header class="glass-header">
             <div>
                 <h2>Meus Apps</h2>
-                <p>Selecione um projeto ou gerencie sua agenda</p>
+                <p id="user-greeting">Selecione um projeto ou gerencie sua agenda</p>
             </div>
             <div style="display: flex; gap: 10px; align-items: center;">
                 <button id="notify-btn" class="glass-button small">🔔 Ativar Avisos</button>
@@ -44,83 +42,78 @@
             </div>
         </header>
 
-        <!-- MENU DE NAVEGAÇÃO ENTRE ABAS -->
-        <div style="display: flex; gap: 15px; margin-bottom: 25px;">
+        <!-- MENU DE NAVEGAÇÃO -->
+        <div style="display: flex; gap: 10px; margin-bottom: 25px; flex-wrap: wrap;">
             <button id="tab-apps" class="glass-button primary">🚀 Aplicativos</button>
             <button id="tab-agenda" class="glass-button">📅 Agenda & Retornos</button>
+            <button id="tab-adm" class="glass-button hidden" style="background: rgba(234, 179, 8, 0.2); border-color: rgba(234, 179, 8, 0.4);">👑 Painel ADM</button>
         </div>
 
-        <!-- SEÇÃO 1: CARDS DOS APLICATIVOS E LINKS -->
+        <!-- SEÇÃO 1: CARDS DOS APLICATIVOS -->
         <div id="apps-container" class="cards-grid">
-            <!-- CRM -->
-            <div class="glass-card">
+            <div class="glass-card" data-card-id="crm">
                 <div class="card-content">
                     <div class="icon">📈</div>
                     <h3>CRM</h3>
                     <p>Acesse o painel principal do CRM.</p>
                 </div>
                 <div class="card-action">
-                    <a href="https://top.crm5.com.br/" target="_blank" class="glass-button full">Acessar CRM</a>
+                    <a href="https://top.crm5.com.br/" target="_blank" class="glass-button full btn-track" data-name="CRM">Acessar CRM</a>
                 </div>
             </div>
 
-            <!-- MAPA NEXUS -->
-            <div class="glass-card">
+            <div class="glass-card" data-card-id="mapa-nexus">
                 <div class="card-content">
                     <div class="icon">🗺️</div>
                     <h3>MAPA NEXUS</h3>
                     <p>Mapeamento e acompanhamento Nexus.</p>
                 </div>
                 <div class="card-action">
-                    <a href="https://script.google.com/macros/s/AKfycbxUsBW0gr-zTXQOwjAzBMM587IPbVhE1QXK16aNFBSl5IRplGgmNuasA1FJrZQjDNIIDQ/exec" target="_blank" class="glass-button full">Abrir Mapa</a>
+                    <a href="https://script.google.com/macros/s/AKfycbxUsBW0gr-zTXQOwjAzBMM587IPbVhE1QXK16aNFBSl5IRplGgmNuasA1FJrZQjDNIIDQ/exec" target="_blank" class="glass-button full btn-track" data-name="MAPA NEXUS">Abrir Mapa</a>
                 </div>
             </div>
 
-            <!-- TOP NEXUS -->
-            <div class="glass-card">
+            <div class="glass-card" data-card-id="top-nexus">
                 <div class="card-content">
                     <div class="icon">⚡</div>
                     <h3>TOP NEXUS</h3>
                     <p>Sistema principal de automação.</p>
                 </div>
                 <div class="card-action">
-                    <a href="https://script.google.com/macros/s/AKfycbx5S_7-KBX4iXR69OeoliWoXCv9l-lN5t9STe_DmxeR_7W--wULVOxdu-R3kht3BQ0X/exec" target="_blank" class="glass-button full">Abrir Top Nexus</a>
+                    <a href="https://script.google.com/macros/s/AKfycbx5S_7-KBX4iXR69OeoliWoXCv9l-lN5t9STe_DmxeR_7W--wULVOxdu-R3kht3BQ0X/exec" target="_blank" class="glass-button full btn-track" data-name="TOP NEXUS">Abrir Top Nexus</a>
                 </div>
             </div>
 
-            <!-- BOOK B2B -->
-            <div class="glass-card">
+            <div class="glass-card" data-card-id="book-b2b">
                 <div class="card-content">
                     <div class="icon">💼</div>
                     <h3>BOOK B2B</h3>
                     <p>Material e documentação B2B.</p>
                 </div>
                 <div class="card-action">
-                    <a href="https://drive.google.com/file/d/1E3dW2tx5jH9lxnNFs1C1rFdxbWYxjBiA/view?usp=sharing" target="_blank" class="glass-button full">Abrir Book</a>
+                    <a href="https://drive.google.com/file/d/1E3dW2tx5jH9lxnNFs1C1rFdxbWYxjBiA/view?usp=sharing" target="_blank" class="glass-button full btn-track" data-name="BOOK B2B">Abrir Book</a>
                 </div>
             </div>
 
-            <!-- BOOK B2C -->
-            <div class="glass-card">
+            <div class="glass-card" data-card-id="book-b2c">
                 <div class="card-content">
                     <div class="icon">🛍️</div>
                     <h3>BOOK B2C</h3>
                     <p>Material e documentação B2C.</p>
                 </div>
                 <div class="card-action">
-                    <a href="https://drive.google.com/file/d/1j8pgqBGL8TILckJfPEaMpg4CfkITXKxA/view?usp=sharin" target="_blank" class="glass-button full">Abrir Book</a>
+                    <a href="https://drive.google.com/file/d/1j8pgqBGL8TILckJfPEaMpg4CfkITXKxA/view?usp=sharin" target="_blank" class="glass-button full btn-track" data-name="BOOK B2C">Abrir Book</a>
                 </div>
             </div>
 
-            <!-- BOOK AVANÇADO -->
-            <div class="glass-card">
+            <div class="glass-card" data-card-id="book-avancado">
                 <div class="card-content">
                     <div class="icon">🚀</div>
                     <h3>BOOK AVANÇADO</h3>
                     <p>Documentação e treinos avançados.</p>
                 </div>
                 <div class="card-action">
-                    <a href="https://drive.google.com/file/d/1K2n0_5AXRyoIzl5CqgEo1VPobbXCHVzq/view?usp=sharing" target="_blank" class="glass-button full">Abrir Book</a>
+                    <a href="https://drive.google.com/file/d/1K2n0_5AXRyoIzl5CqgEo1VPobbXCHVzq/view?usp=sharing" target="_blank" class="glass-button full btn-track" data-name="BOOK AVANÇADO">Abrir Book</a>
                 </div>
             </div>
         </div>
@@ -139,8 +132,35 @@
             </div>
 
             <h3 style="margin-bottom: 15px;">Próximos Retornos</h3>
-            <div id="lista-agendamentos" style="display: flex; flex-direction: column; gap: 15px;">
-                <!-- Os agendamentos do Firebase aparecerão aqui -->
+            <div id="lista-agendamentos" style="display: flex; flex-direction: column; gap: 15px;"></div>
+        </div>
+
+        <!-- SEÇÃO 3: PAINEL ADM (EXCLUSIVO) -->
+        <div id="adm-container" class="hidden">
+            <!-- Gerenciamento de Permissões -->
+            <div class="glass-card" style="padding: 25px; margin-bottom: 25px;">
+                <h3 style="margin-bottom: 15px;">⚙️ Gerenciar Permissões por Usuário</h3>
+                <form id="permissoes-form">
+                    <input type="email" id="user-email-perm" placeholder="E-mail do Usuário (ex: usuario@gmail.com)" required style="width: 100%; padding: 12px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.3); color: white; margin-bottom: 15px;">
+                    
+                    <p style="margin-bottom: 10px; font-weight: 600;">Selecione os Cards Permitidos:</p>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; margin-bottom: 20px;">
+                        <label><input type="checkbox" class="card-check" value="crm" checked> CRM</label>
+                        <label><input type="checkbox" class="card-check" value="mapa-nexus" checked> MAPA NEXUS</label>
+                        <label><input type="checkbox" class="card-check" value="top-nexus" checked> TOP NEXUS</label>
+                        <label><input type="checkbox" class="card-check" value="book-b2b" checked> BOOK B2B</label>
+                        <label><input type="checkbox" class="card-check" value="book-b2c" checked> BOOK B2C</label>
+                        <label><input type="checkbox" class="card-check" value="book-avancado" checked> BOOK AVANÇADO</label>
+                    </div>
+                    
+                    <button type="submit" class="glass-button primary">Salvar Permissões</button>
+                </form>
+            </div>
+
+            <!-- Histórico de Logs / Relatório de Acessos -->
+            <div class="glass-card" style="padding: 25px;">
+                <h3 style="margin-bottom: 15px;">👁️ Histórico de Acessos e Cliques</h3>
+                <div id="lista-logs" style="display: flex; flex-direction: column; gap: 10px; max-height: 400px; overflow-y: auto;"></div>
             </div>
         </div>
     </main>
