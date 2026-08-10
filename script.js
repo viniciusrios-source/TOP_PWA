@@ -1,5 +1,5 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getAuth, signInWithPopup, signInWithRedirect, getRedirectResult, GoogleAuthProvider, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, deleteDoc, doc, setDoc, getDoc, limit } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -16,13 +16,16 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 const provider = new GoogleAuthProvider();
 
+// Força o Firebase a gravar o login no armazenamento local (essencial para iPhone/Safari)
+setPersistence(auth, browserLocalPersistence);
+
 const ADMINS = [
     "pwatoptelecom@gmail.com"
 ];
 
 let usuarioAtual = null;
 
-// Elementos de UI
+// UI
 const loginBtn = document.getElementById('login-btn');
 const logoutBtn = document.getElementById('logout-btn');
 const loginSection = document.getElementById('login-section');
@@ -44,24 +47,18 @@ const listaAgendamentos = document.getElementById('lista-agendamentos');
 const permissoesForm = document.getElementById('permissoes-form');
 const listaLogs = document.getElementById('lista-logs');
 
-// DETECÇÃO SE É DISPOSITIVO iOS / SAFARI
-const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-
-// TRATAMENTO DE LOGIN AUTOMÁTICO / REDIRECT (NO iOS)
+// MONITOR DE SESSÃO (Recupera o login automático no iPhone e PC)
 onAuthStateChanged(auth, async (user) => {
     if (user) {
         usuarioAtual = user;
-        exibirDashboard();
+        await exibirDashboard();
+    } else {
+        loginSection.classList.remove('hidden');
+        loginSection.classList.add('active');
+        dashboardSection.classList.remove('active');
+        dashboardSection.classList.add('hidden');
     }
 });
-
-// MONITORAMENTO DO RETORNO DO REDIRECT (SAFARI)
-getRedirectResult(auth).then(async (result) => {
-    if (result && result.user) {
-        usuarioAtual = result.user;
-        exibirDashboard();
-    }
-}).catch(err => console.error("Erro no Redirect:", err));
 
 async function exibirDashboard() {
     loginSection.classList.remove('active');
@@ -81,38 +78,39 @@ async function exibirDashboard() {
     carregarAgendamentos();
 }
 
-// BOTÃO DE LOGIN COM DETECÇÃO AUTOMÁTICA DE PLATAFORMA
+// BOTÃO DE LOGIN
 loginBtn.addEventListener('click', () => {
     const textoOriginal = loginBtn.innerHTML;
     loginBtn.innerHTML = "Carregando...";
 
-    if (isIOS) {
-        signInWithRedirect(auth, provider);
-    } else {
-        signInWithPopup(auth, provider).then(async (result) => {
+    signInWithPopup(auth, provider)
+        .then(async (result) => {
             usuarioAtual = result.user;
             await exibirDashboard();
             loginBtn.innerHTML = textoOriginal;
-        }).catch((error) => {
-            console.error("Erro no Pop-up, tentando Redirect:", error);
-            signInWithRedirect(auth, provider);
+        })
+        .catch((error) => {
+            console.error("Erro no Login:", error);
+            loginBtn.innerHTML = textoOriginal;
+            if (error.code !== 'auth/popup-closed-by-user') {
+                alert("Erro ao realizar o login. Tente novamente.");
+            }
         });
-    }
 });
 
 // LOGOUT
 logoutBtn.addEventListener('click', () => {
     if (usuarioAtual) registrarLog("Fez Logout");
     signOut(auth).then(() => {
+        usuarioAtual = null;
         dashboardSection.classList.remove('active');
         dashboardSection.classList.add('hidden');
         loginSection.classList.remove('hidden');
         loginSection.classList.add('active');
-        usuarioAtual = null;
     });
 });
 
-// ABAS
+// NAVEGAÇÃO ENTRE ABAS
 tabApps.addEventListener('click', () => trocarAba(tabApps, appsContainer));
 tabAgenda.addEventListener('click', () => trocarAba(tabAgenda, agendaContainer));
 tabAdm.addEventListener('click', () => {
@@ -128,7 +126,7 @@ function trocarAba(abaAtiva, containerAtivo) {
     containerAtivo.classList.remove('hidden');
 }
 
-// PERMISSÕES
+// PERMISSÕES POR USUÁRIO
 async function aplicarPermissoes(email, eAdmin) {
     const allCards = document.querySelectorAll('.glass-card[data-card-id]');
     if (eAdmin) {
@@ -155,7 +153,7 @@ async function aplicarPermissoes(email, eAdmin) {
     }
 }
 
-// LOGS
+// RASTREAMENTO DE LOGS
 document.querySelectorAll('.btn-track').forEach(btn => {
     btn.addEventListener('click', (e) => {
         const cardName = e.target.getAttribute('data-name');
