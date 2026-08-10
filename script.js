@@ -18,8 +18,8 @@ const provider = new GoogleAuthProvider();
 
 // LISTA DE ADMINISTRADORES (Insira seu e-mail do Google aqui)
 const ADMINS = [
-    "pwatoptelecom@gmail.com", 
-    "seu-email-aqui@gmail.com" 
+    "vinicius.rios@bctel.com.br", 
+    "antonio.queiros@bctel.com.br" 
 ];
 
 let usuarioAtual = null;
