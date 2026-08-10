@@ -1,283 +1,197 @@
-/* Configurações Globais */
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
     font-family: 'Inter', sans-serif;
-    -webkit-tap-highlight-color: transparent; /* Remove pisca azul no celular */
 }
 
 body {
-    background-color: #0f172a; /* Azul muito escuro/Dark mode */
-    color: #f8fafc;
+    background-color: #0b0c10;
+    color: #ffffff;
     min-height: 100vh;
     display: flex;
     justify-content: center;
+    align-items: center;
     overflow-x: hidden;
-    position: relative;
 }
 
-/* Bolhas de Luz de Fundo */
+/* Bolhas de Luz no Fundo */
 .background-shapes {
     position: fixed;
     width: 100vw;
     height: 100vh;
+    top: 0;
+    left: 0;
     z-index: -1;
     overflow: hidden;
 }
 
 .shape {
     position: absolute;
+    filter: blur(100px);
     border-radius: 50%;
-    filter: blur(80px);
-    opacity: 0.6;
-    animation: float 10s infinite alternate ease-in-out;
+    opacity: 0.5;
 }
 
 .shape-1 {
-    background: #3b82f6; /* Azul brilhante */
-    width: 300px;
-    height: 300px;
-    top: -100px;
-    left: -100px;
+    background: #00d2ff;
+    width: 350px;
+    height: 350px;
+    top: -50px;
+    left: -50px;
 }
 
 .shape-2 {
-    background: #8b5cf6; /* Roxo */
-    width: 250px;
-    height: 250px;
-    bottom: -50px;
-    right: -50px;
-    animation-delay: -3s;
+    background: #e100ff;
+    width: 400px;
+    height: 400px;
+    bottom: -100px;
+    right: -100px;
 }
 
 .shape-3 {
-    background: #0ea5e9; /* Ciano */
-    width: 200px;
-    height: 200px;
+    background: #7928ca;
+    width: 300px;
+    height: 300px;
     top: 40%;
     left: 40%;
-    animation-delay: -5s;
 }
 
-@keyframes float {
-    0% { transform: translate(0, 0); }
-    100% { transform: translate(30px, 50px); }
-}
-
-/* Transições de Tela */
-.active {
-    display: flex !important;
-    animation: fadeIn 0.6s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.hidden {
-    display: none !important;
-}
-
-@keyframes fadeIn {
-    from { opacity: 0; transform: scale(0.95) translateY(10px); }
-    to { opacity: 1; transform: scale(1) translateY(0); }
-}
-
-/* Estrutura de Glassmorphism Padrão */
-.glass {
-    background: rgba(255, 255, 255, 0.03);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
-}
-
-/* ==================== TELA DE LOGIN ==================== */
-#login-section {
+/* Efeito de Vidro (Glassmorphism) */
+.glass-container {
     width: 100%;
-    align-items: center;
-    justify-content: center;
+    max-width: 420px;
     padding: 20px;
 }
 
 .login-box {
     background: rgba(255, 255, 255, 0.05);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border: 1px solid rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 24px;
-    padding: 50px 30px;
-    width: 100%;
-    max-width: 400px;
+    padding: 40px 30px;
     text-align: center;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
-}
-
-.logo-icon {
-    font-size: 50px;
-    margin-bottom: 15px;
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
 }
 
 .login-box h2 {
-    font-size: 28px;
-    margin-bottom: 8px;
+    font-size: 24px;
     font-weight: 600;
+    margin-bottom: 8px;
 }
 
 .login-box p {
     color: #94a3b8;
-    margin-bottom: 30px;
-    font-size: 15px;
+    font-size: 14px;
+    margin-bottom: 24px;
 }
 
-/* ==================== BOTÕES ==================== */
+/* Botões Estilizados */
 .glass-button {
-    background: rgba(255, 255, 255, 0.1);
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.15);
     color: white;
-    padding: 14px 24px;
-    border-radius: 100px; /* Arredondado estilo Apple */
-    font-size: 16px;
+    padding: 12px 20px;
+    border-radius: 12px;
     font-weight: 600;
     cursor: pointer;
     transition: all 0.3s ease;
-    display: flex;
+    display: inline-flex;
     align-items: center;
     justify-content: center;
     gap: 10px;
+    text-decoration: none;
 }
 
 .glass-button:hover {
     background: rgba(255, 255, 255, 0.2);
     transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(255, 255, 255, 0.1);
-}
-
-.glass-button:active {
-    transform: translateY(0);
 }
 
 .glass-button.primary {
-    width: 100%;
-    background: rgba(255, 255, 255, 0.15);
+    background: linear-gradient(135deg, #00d2ff 0%, #e100ff 100%);
+    border: none;
 }
 
-.glass-button.small {
-    padding: 8px 16px;
-    font-size: 14px;
+.glass-button.primary:hover {
+    box-shadow: 0 0 20px rgba(225, 0, 255, 0.4);
 }
 
 .glass-button.full {
     width: 100%;
 }
 
-.google-icon {
-    width: 20px;
-    height: 20px;
+.glass-button.small {
+    padding: 8px 14px;
+    font-size: 12px;
 }
 
-/* ==================== DASHBOARD (CARDS) ==================== */
+.google-icon {
+    width: 18px;
+    height: 18px;
+}
+
+/* Dashboard e Cards */
 #dashboard-section {
     width: 100%;
-    max-width: 800px;
-    padding: 30px 20px;
-    flex-direction: column;
+    max-width: 1000px;
+    padding: 20px;
+    min-height: 100vh;
 }
 
 .glass-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 30px;
-    padding: 20px;
     background: rgba(255, 255, 255, 0.05);
-    backdrop-filter: blur(10px);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 20px;
     border-radius: 20px;
-    border: 1px solid rgba(255, 255, 255, 0.08);
-}
-
-.glass-header h2 {
-    font-size: 22px;
-}
-.glass-header p {
-    color: #94a3b8;
-    font-size: 14px;
+    margin-bottom: 20px;
 }
 
 .cards-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
     gap: 20px;
-    padding-bottom: 40px;
 }
 
 .glass-card {
-    background: rgba(255, 255, 255, 0.03);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
+    background: rgba(255, 255, 255, 0.04);
+    backdrop-filter: blur(12px);
     border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 24px;
-    overflow: hidden; /* Mantém as bordas do botão de ação certinhas */
-    transition: all 0.4s ease;
+    border-radius: 20px;
+    padding: 24px;
     display: flex;
     flex-direction: column;
-    position: relative;
+    justify-content: space-between;
+    transition: all 0.3s ease;
 }
 
-.card-content {
-    padding: 30px 20px;
-    text-align: center;
-    flex-grow: 1;
+.glass-card:hover {
+    border-color: rgba(225, 0, 255, 0.4);
+    transform: translateY(-5px);
 }
 
-.glass-card .icon {
-    font-size: 45px;
-    margin-bottom: 15px;
-    transition: transform 0.3s;
+.card-content .icon {
+    font-size: 32px;
+    margin-bottom: 12px;
 }
 
-.glass-card h3 {
+.card-content h3 {
     font-size: 18px;
-    margin-bottom: 8px;
+    margin-bottom: 6px;
 }
 
-.glass-card p {
-    font-size: 14px;
-    color: #cbd5e1;
+.card-content p {
+    color: #94a3b8;
+    font-size: 13px;
+    margin-bottom: 20px;
 }
 
-/* O segredo da animação do botão no card */
-.card-action {
-    padding: 0 20px 20px 20px;
-    opacity: 0;
-    transform: translateY(15px);
-    transition: all 0.4s ease;
-    /* Para dispositivos touch (celulares), já deixamos um pouco visível */
+.hidden {
+    display: none !important;
 }
 
-/* Efeito Hover em computadores */
-@media (hover: hover) {
-    .glass-card:hover {
-        background: rgba(255, 255, 255, 0.08);
-        border-color: rgba(255, 255, 255, 0.2);
-        transform: translateY(-8px);
-        box-shadow: 0 15px 30px rgba(0,0,0,0.3);
-    }
-    
-    .glass-card:hover .icon {
-        transform: scale(1.1);
-    }
-    
-    .glass-card:hover .card-action {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-/* Ajuste para Celulares (onde não tem 'hover' com mouse) */
-@media (hover: none) {
-    .card-action {
-        opacity: 1;
-        transform: translateY(0);
-    }
-    .glass-card:active {
-        transform: scale(0.98);
-    }
+.active {
+    display: block;
 }
