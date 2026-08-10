@@ -1,1 +1,21 @@
-
+{
+  "name": "Meu Hub de Apps",
+  "short_name": "Hub Apps",
+  "start_url": "/index.html",
+  "display": "standalone",
+  "background_color": "#0f172a",
+  "theme_color": "#0f172a",
+  "description": "Painel central para meus aplicativos e automações.",
+  "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/2950/2950664.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/2950/2950664.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
