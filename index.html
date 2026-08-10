@@ -3,13 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Meu Hub de Apps</title>
+    <title>TOP Telecom - Hub de Sistemas</title>
     <link rel="stylesheet" href="style.css">
     <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#0f172a">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    <meta name="theme-color" content="#0d0e15">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
+    <!-- Formas de fundo com as cores da TOP Telecom -->
     <div class="background-shapes">
         <div class="shape shape-1"></div>
         <div class="shape shape-2"></div>
@@ -19,9 +20,10 @@
     <!-- Tela de Login -->
     <main id="login-section" class="glass-container active">
         <div class="login-box">
-            <div class="logo-icon">🚀</div>
+            <!-- LOGO OFICIAL -->
+            <img src="https://i.ibb.co/r1P3kB5/top.png" alt="TOP Telecom" class="company-logo" style="max-width: 180px; height: auto; margin-bottom: 25px;">
             <h2>Bem-vindo</h2>
-            <p>Faça login para acessar suas automações.</p>
+            <p>Faça login para acessar suas automações e ferramentas.</p>
             <button id="login-btn" class="glass-button primary">
                 <img src="https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg" alt="Google" class="google-icon">
                 Entrar com Google
@@ -31,10 +33,14 @@
 
     <!-- Painel Principal (Dashboard) -->
     <main id="dashboard-section" class="hidden">
-        <header class="glass-header">
-            <div>
-                <h2>Meus Apps</h2>
-                <p id="user-greeting">Selecione um projeto ou gerencie sua agenda</p>
+        <header class="glass-header" style="display: flex; justify-content: space-between; align-items: center; gap: 15px; flex-wrap: wrap;">
+            <div style="display: flex; align-items: center; gap: 15px;">
+                <!-- LOGO NO CABEÇALHO -->
+                <img src="https://i.ibb.co/r1P3kB5/top.png" alt="TOP Telecom" style="height: 42px; width: auto; object-fit: contain;">
+                <div>
+                    <h2>TOP Telecom</h2>
+                    <p id="user-greeting">Selecione um projeto ou gerencie sua agenda</p>
+                </div>
             </div>
             <div style="display: flex; gap: 10px; align-items: center;">
                 <button id="notify-btn" class="glass-button small">🔔 Ativar Avisos</button>
@@ -42,7 +48,7 @@
             </div>
         </header>
 
-        <!-- MENU DE NAVEGAÇÃO -->
+        <!-- MENU DE NAVEGAÇÃO ENTRE ABAS -->
         <div style="display: flex; gap: 10px; margin-bottom: 25px; flex-wrap: wrap;">
             <button id="tab-apps" class="glass-button primary">🚀 Aplicativos</button>
             <button id="tab-agenda" class="glass-button">📅 Agenda & Retornos</button>
@@ -137,11 +143,10 @@
 
         <!-- SEÇÃO 3: PAINEL ADM (EXCLUSIVO) -->
         <div id="adm-container" class="hidden">
-            <!-- Gerenciamento de Permissões -->
             <div class="glass-card" style="padding: 25px; margin-bottom: 25px;">
                 <h3 style="margin-bottom: 15px;">⚙️ Gerenciar Permissões por Usuário</h3>
                 <form id="permissoes-form">
-                    <input type="email" id="user-email-perm" placeholder="E-mail do Usuário (ex: usuario@gmail.com)" required style="width: 100%; padding: 12px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.3); color: white; margin-bottom: 15px;">
+                    <input type="email" id="user-email-perm" placeholder="E-mail do Usuário" required style="width: 100%; padding: 12px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.3); color: white; margin-bottom: 15px;">
                     
                     <p style="margin-bottom: 10px; font-weight: 600;">Selecione os Cards Permitidos:</p>
                     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; margin-bottom: 20px;">
@@ -157,7 +162,6 @@
                 </form>
             </div>
 
-            <!-- Histórico de Logs / Relatório de Acessos -->
             <div class="glass-card" style="padding: 25px;">
                 <h3 style="margin-bottom: 15px;">👁️ Histórico de Acessos e Cliques</h3>
                 <div id="lista-logs" style="display: flex; flex-direction: column; gap: 10px; max-height: 400px; overflow-y: auto;"></div>
