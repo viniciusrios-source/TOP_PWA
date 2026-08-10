@@ -4,7 +4,7 @@ import { getAuth, signInWithPopup, GoogleAuthProvider, signOut } from "https://w
 
 // A sua chave de configuração do Firebase (copiada do seu print!)
 const firebaseConfig = {
-  apiKey: "AIzaSyAO-XyaXaPA5KbQo_Pue48-FXYn0GDH99s",
+  apiKey: "AIzaSyA0-XyaXaPA5KbQo_Pue48-FXYn0GDH99s",
   authDomain: "pwa-top-telecom.firebaseapp.com",
   projectId: "pwa-top-telecom",
   storageBucket: "pwa-top-telecom.firebasestorage.app",
