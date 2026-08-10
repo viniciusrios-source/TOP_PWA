@@ -1,5 +1,5 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getAuth, signInWithPopup, GoogleAuthProvider, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getAuth, signInWithPopup, signInWithRedirect, getRedirectResult, GoogleAuthProvider, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, deleteDoc, doc, setDoc, getDoc, limit } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -16,10 +16,8 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 const provider = new GoogleAuthProvider();
 
-// LISTA DE ADMINISTRADORES (Insira seu e-mail do Google aqui)
 const ADMINS = [
-    "vinicius.rios@bctel.com.br", 
-    "antonio.queiros@bctel.com.br" 
+    "pwatoptelecom@gmail.com"
 ];
 
 let usuarioAtual = null;
@@ -46,15 +44,77 @@ const listaAgendamentos = document.getElementById('lista-agendamentos');
 const permissoesForm = document.getElementById('permissoes-form');
 const listaLogs = document.getElementById('lista-logs');
 
-// NAVEGAÇÃO ENTRE ABAS
-tabApps.addEventListener('click', () => {
-    trocarAba(tabApps, appsContainer);
+// DETECÇÃO SE É DISPOSITIVO iOS / SAFARI
+const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+
+// TRATAMENTO DE LOGIN AUTOMÁTICO / REDIRECT (NO iOS)
+onAuthStateChanged(auth, async (user) => {
+    if (user) {
+        usuarioAtual = user;
+        exibirDashboard();
+    }
 });
 
-tabAgenda.addEventListener('click', () => {
-    trocarAba(tabAgenda, agendaContainer);
+// MONITORAMENTO DO RETORNO DO REDIRECT (SAFARI)
+getRedirectResult(auth).then(async (result) => {
+    if (result && result.user) {
+        usuarioAtual = result.user;
+        exibirDashboard();
+    }
+}).catch(err => console.error("Erro no Redirect:", err));
+
+async function exibirDashboard() {
+    loginSection.classList.remove('active');
+    loginSection.classList.add('hidden');
+    dashboardSection.classList.remove('hidden');
+    dashboardSection.classList.add('active');
+
+    userGreeting.innerText = `Olá, ${usuarioAtual.displayName}!`;
+    registrarLog("Fez Login no Hub");
+
+    const eAdmin = ADMINS.includes(usuarioAtual.email.toLowerCase());
+    if (eAdmin) {
+        tabAdm.classList.remove('hidden');
+    }
+
+    await aplicarPermissoes(usuarioAtual.email.toLowerCase(), eAdmin);
+    carregarAgendamentos();
+}
+
+// BOTÃO DE LOGIN COM DETECÇÃO AUTOMÁTICA DE PLATAFORMA
+loginBtn.addEventListener('click', () => {
+    const textoOriginal = loginBtn.innerHTML;
+    loginBtn.innerHTML = "Carregando...";
+
+    if (isIOS) {
+        signInWithRedirect(auth, provider);
+    } else {
+        signInWithPopup(auth, provider).then(async (result) => {
+            usuarioAtual = result.user;
+            await exibirDashboard();
+            loginBtn.innerHTML = textoOriginal;
+        }).catch((error) => {
+            console.error("Erro no Pop-up, tentando Redirect:", error);
+            signInWithRedirect(auth, provider);
+        });
+    }
 });
 
+// LOGOUT
+logoutBtn.addEventListener('click', () => {
+    if (usuarioAtual) registrarLog("Fez Logout");
+    signOut(auth).then(() => {
+        dashboardSection.classList.remove('active');
+        dashboardSection.classList.add('hidden');
+        loginSection.classList.remove('hidden');
+        loginSection.classList.add('active');
+        usuarioAtual = null;
+    });
+});
+
+// ABAS
+tabApps.addEventListener('click', () => trocarAba(tabApps, appsContainer));
+tabAgenda.addEventListener('click', () => trocarAba(tabAgenda, agendaContainer));
 tabAdm.addEventListener('click', () => {
     trocarAba(tabAdm, admContainer);
     carregarLogs();
@@ -68,57 +128,9 @@ function trocarAba(abaAtiva, containerAtivo) {
     containerAtivo.classList.remove('hidden');
 }
 
-// LOGIN
-loginBtn.addEventListener('click', () => {
-    const textoOriginal = loginBtn.innerHTML;
-    loginBtn.innerHTML = "Carregando...";
-
-    signInWithPopup(auth, provider).then(async (result) => {
-        usuarioAtual = result.user;
-        
-        loginSection.classList.remove('active');
-        loginSection.classList.add('hidden');
-        dashboardSection.classList.remove('hidden');
-        dashboardSection.classList.add('active');
-        
-        userGreeting.innerText = `Olá, ${usuarioAtual.displayName}!`;
-        loginBtn.innerHTML = textoOriginal;
-
-        // REGISTRAR LOG DE ACESSO
-        registrarLog("Fez Login no Hub");
-
-        // VERIFICAR SE É ADM
-        const eAdmin = ADMINS.includes(usuarioAtual.email.toLowerCase());
-        if (eAdmin) {
-            tabAdm.classList.remove('hidden');
-        }
-
-        // APLICAR PERMISSÕES DE CARDS
-        await aplicarPermissoes(usuarioAtual.email.toLowerCase(), eAdmin);
-        carregarAgendamentos();
-
-    }).catch(err => {
-        console.error(err);
-        alert("Erro no login.");
-        loginBtn.innerHTML = textoOriginal;
-    });
-});
-
-// LOGOUT
-logoutBtn.addEventListener('click', () => {
-    if (usuarioAtual) registrarLog("Fez Logout");
-    signOut(auth).then(() => {
-        dashboardSection.classList.remove('active');
-        dashboardSection.classList.add('hidden');
-        loginSection.classList.remove('hidden');
-        loginSection.classList.add('active');
-    });
-});
-
-// APLICAR PERMISSÕES NOS CARDS
+// PERMISSÕES
 async function aplicarPermissoes(email, eAdmin) {
     const allCards = document.querySelectorAll('.glass-card[data-card-id]');
-    
     if (eAdmin) {
         allCards.forEach(c => c.classList.remove('hidden'));
         return;
@@ -132,22 +144,18 @@ async function aplicarPermissoes(email, eAdmin) {
             const permitidos = docSnap.data().cardsPermitidos || [];
             allCards.forEach(card => {
                 const cardId = card.getAttribute('data-card-id');
-                if (permitidos.includes(cardId)) {
-                    card.classList.remove('hidden');
-                } else {
-                    card.classList.add('hidden');
-                }
+                if (permitidos.includes(cardId)) card.classList.remove('hidden');
+                else card.classList.add('hidden');
             });
         } else {
-            // Se o usuário não tem regra cadastrada, mostra todos por padrão
             allCards.forEach(c => c.classList.remove('hidden'));
         }
     } catch (e) {
-        console.error("Erro ao carregar permissões:", e);
+        console.error(e);
     }
 }
 
-// RASTREAR CLIQUES NOS CARDS
+// LOGS
 document.querySelectorAll('.btn-track').forEach(btn => {
     btn.addEventListener('click', (e) => {
         const cardName = e.target.getAttribute('data-name');
@@ -155,7 +163,6 @@ document.querySelectorAll('.btn-track').forEach(btn => {
     });
 });
 
-// REGISTRAR LOG DE AUDITORIA NO FIRESTORE
 async function registrarLog(acao) {
     if (!usuarioAtual) return;
     try {
@@ -166,11 +173,10 @@ async function registrarLog(acao) {
             dataHora: new Date()
         });
     } catch (e) {
-        console.error("Erro ao salvar log:", e);
+        console.error(e);
     }
 }
 
-// CARREGAR LOGS NO PAINEL ADM
 function carregarLogs() {
     const q = query(collection(db, "logs"), orderBy("dataHora", "desc"), limit(30));
     onSnapshot(q, (snapshot) => {
@@ -179,8 +185,8 @@ function carregarLogs() {
             const log = docSnap.data();
             const dataFmt = log.dataHora ? new Date(log.dataHora.toDate()).toLocaleString('pt-BR') : '';
             listaLogs.innerHTML += `
-                <div style="background: rgba(0,0,0,0.3); padding: 10px; border-radius: 8px; border-left: 3px solid #3b82f6; font-size: 13px;">
-                    <strong>${log.nome || log.email}</strong> - <span style="color: #38bdf8;">${log.acao}</span>
+                <div style="background: rgba(0,0,0,0.3); padding: 10px; border-radius: 8px; border-left: 3px solid #00d2ff; font-size: 13px;">
+                    <strong>${log.nome || log.email}</strong> - <span style="color: #e100ff;">${log.acao}</span>
                     <br><small style="color: #94a3b8;">${dataFmt}</small>
                 </div>
             `;
@@ -188,11 +194,9 @@ function carregarLogs() {
     });
 }
 
-// SALVAR PERMISSÕES DE UM USUÁRIO (ADM)
 permissoesForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     const emailTarget = document.getElementById('user-email-perm').value.trim().toLowerCase();
-    
     const checkboxes = document.querySelectorAll('.card-check:checked');
     const cardsPermitidos = Array.from(checkboxes).map(cb => cb.value);
 
@@ -204,7 +208,6 @@ permissoesForm.addEventListener('submit', async (e) => {
         alert(`Permissões salvas para ${emailTarget}!`);
         permissoesForm.reset();
     } catch (err) {
-        console.error("Erro ao salvar permissões:", err);
         alert("Erro ao salvar permissões.");
     }
 });
@@ -215,7 +218,7 @@ notifyBtn.addEventListener('click', () => {
         Notification.requestPermission().then(permission => {
             if (permission === "granted") {
                 alert("Notificações ativadas!");
-                new Notification("Hub de Apps", { body: "Avisos ativos!" });
+                new Notification("TOP Telecom", { body: "Avisos ativos!" });
             }
         });
     }
@@ -258,7 +261,7 @@ function carregarAgendamentos() {
             listaAgendamentos.innerHTML += `
                 <div class="glass-card" style="padding: 15px; display: flex; justify-content: space-between; align-items: center; gap: 10px;">
                     <div>
-                        <h4 style="font-size: 18px; color: #3b82f6;">${data.nome}</h4>
+                        <h4 style="font-size: 18px; color: #00d2ff;">${data.nome}</h4>
                         <p style="font-size: 14px; color: #cbd5e1;">📞 ${data.fone} | 📅 ${new Date(data.dataHora).toLocaleString('pt-BR')}</p>
                         <p style="font-size: 13px; color: #94a3b8;">${data.obs || ''}</p>
                     </div>
