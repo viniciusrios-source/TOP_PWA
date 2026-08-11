@@ -95,6 +95,7 @@ async function exibirDashboard() {
     if (eAdmin) {
         tabAdm.classList.remove('hidden');
         carregarVisaoGeralMetas(); // Carrega overview para o Gestor
+        carregarListaUsuarios();
     }
 
     await aplicarPermissoes(usuarioAtual.email.toLowerCase(), eAdmin);
@@ -315,5 +316,24 @@ function carregarAgendamentos() {
             lista.innerHTML += `<div class="glass-card" style="padding: 15px; display: flex; justify-content: space-between; align-items: center; gap: 10px;"><div><h4 style="font-size: 18px; color: #00d2ff;">${data.nome}</h4><p style="font-size: 14px; color: #cbd5e1;">📞 ${data.fone} | 📅 ${new Date(data.dataHora).toLocaleString('pt-BR')}</p></div><button class="glass-button small btn-excluir" data-id="${docSnap.id}" style="background: rgba(239,68,68,0.2);">OK</button></div>`;
         });
         document.querySelectorAll('.btn-excluir').forEach(btn => btn.addEventListener('click', async (e) => await deleteDoc(doc(db, "agendamentos", e.target.getAttribute('data-id')))));
+    });
+}
+// ============================================
+// LISTA AUTOMÁTICA DE USUÁRIOS NO PAINEL ADM
+// ============================================
+function carregarListaUsuarios() {
+    onSnapshot(collection(db, "usuarios"), (snapshot) => {
+        const selectMeta = document.getElementById('meta-email');
+        const selectPerm = document.getElementById('user-email-perm');
+        
+        let options = '<option value="">Selecione o funcionário...</option>';
+        
+        snapshot.forEach(docSnap => {
+            const u = docSnap.data();
+            options += `<option value="${u.email}">${u.nome} (${u.email})</option>`;
+        });
+        
+        if(selectMeta) selectMeta.innerHTML = options;
+        if(selectPerm) selectPerm.innerHTML = options;
     });
 }
