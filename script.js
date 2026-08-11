@@ -14,7 +14,13 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
+
 const provider = new GoogleAuthProvider();
+// FORÇA O GOOGLE A SEMPRE MOSTRAR A TELA DE ESCOLHER CONTA
+provider.setCustomParameters({
+  prompt: 'select_account'
+});
+
 setPersistence(auth, browserLocalPersistence);
 
 // COLOQUE SEU E-MAIL AQUI PARA SER O GESTOR
@@ -135,7 +141,7 @@ function trocarAba(abaAtiva, containerAtivo) {
     containerAtivo.classList.remove('hidden');
 }
 
-// --- MURAL DE AVISOS (NOVO) ---
+// --- MURAL DE AVISOS ---
 avisoForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     const titulo = document.getElementById('aviso-titulo').value;
@@ -149,7 +155,7 @@ avisoForm.addEventListener('submit', async (e) => {
         });
         avisoForm.reset();
         alert("Comunicado publicado para toda a empresa!");
-        trocarAba(tabMural, muralContainer); // Volta para a aba Mural para ver o post
+        trocarAba(tabMural, muralContainer); 
     } catch (err) { alert("Erro ao postar aviso."); }
 });
 
