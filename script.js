@@ -19,14 +19,12 @@ const provider = new GoogleAuthProvider();
 provider.setCustomParameters({ prompt: 'select_account' });
 setPersistence(auth, browserLocalPersistence);
 
-// LISTA DE ADMINS ROOT
 const ADMINS = [
     "pwatoptelecom@gmail.com",
     "vinicius.rios@bctel.com.br",
     "antonio.queiros@bctel.com.br"
 ];
 
-// PERFIS PREDEFINIDOS DE CARDS
 const PERFIS_CARDS = {
     'vendas': ['crm', 'mapa-nexus', 'top-nexus', 'chamados-abertura', 'book-b2b', 'book-b2c', 'book-avancado'],
     'ti': ['crm', 'mapa-nexus', 'top-nexus', 'chamados-abertura', 'chamados-acompanhamento', 'book-b2b', 'book-b2c', 'book-avancado'],
@@ -36,14 +34,12 @@ const PERFIS_CARDS = {
 
 let usuarioAtual = null;
 
-// UI
 const loginBtn = document.getElementById('login-btn');
 const logoutBtn = document.getElementById('logout-btn');
 const loginSection = document.getElementById('login-section');
 const dashboardSection = document.getElementById('dashboard-section');
 const userGreeting = document.getElementById('user-greeting');
 
-// ABAS
 const tabMural = document.getElementById('tab-mural');
 const tabMetas = document.getElementById('tab-metas');
 const tabApps = document.getElementById('tab-apps');
@@ -58,6 +54,13 @@ const agendaContainer = document.getElementById('agenda-container');
 const equipeContainer = document.getElementById('equipe-container');
 const admContainer = document.getElementById('adm-container');
 
+// VISUALIZADOR INTERNO
+const viewerContainer = document.getElementById('viewer-container');
+const appViewer = document.getElementById('app-viewer');
+const viewerTitle = document.getElementById('viewer-title');
+const closeViewerBtn = document.getElementById('close-viewer-btn');
+const tabsMenu = document.querySelector('.tabs-menu');
+
 const avisoForm = document.getElementById('aviso-form');
 const listaAvisos = document.getElementById('lista-avisos');
 const btnSalvarMetas = document.getElementById('btn-salvar-metas');
@@ -67,23 +70,20 @@ const vipForm = document.getElementById('vip-form');
 
 const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 
-// --- TRAVA DE SEGURANÇA ---
 async function validarAcesso(user) {
     const email = user.email.toLowerCase();
     const dominiosAutorizados = ["@bctel.com.br", "@toptelecomsp1.com.br"];
     if (dominiosAutorizados.some(dominio => email.endsWith(dominio)) || ADMINS.includes(email)) return true;
-    
     try {
         const vipSnap = await getDoc(doc(db, "convidados", email));
         return vipSnap.exists();
     } catch (e) { return false; }
 }
 
-// MONITOR DE SESSÃO
 onAuthStateChanged(auth, async (user) => {
     if (user) {
         if (await validarAcesso(user)) { usuarioAtual = user; await exibirDashboard(); }
-        else { alert("⛔ ACESSO NEGADO!\nUse o e-mail da empresa."); signOut(auth); }
+        else { alert("⛔ ACESSO NEGADO!"); signOut(auth); }
     } else {
         loginSection.classList.remove('hidden'); loginSection.classList.add('active');
         dashboardSection.classList.remove('active'); dashboardSection.classList.add('hidden');
@@ -93,11 +93,10 @@ onAuthStateChanged(auth, async (user) => {
 getRedirectResult(auth).then(async (result) => {
     if (result && result.user) {
         if (await validarAcesso(result.user)) { usuarioAtual = result.user; await exibirDashboard(); }
-        else { alert("⛔ ACESSO NEGADO!\nUse o e-mail da empresa."); signOut(auth); }
+        else { alert("⛔ ACESSO NEGADO!"); signOut(auth); }
     }
 }).catch(err => console.error(err));
 
-// --- EXIBIR INTRANET ---
 async function exibirDashboard() {
     loginSection.classList.remove('active'); loginSection.classList.add('hidden');
     dashboardSection.classList.remove('hidden'); dashboardSection.classList.add('active');
@@ -106,7 +105,6 @@ async function exibirDashboard() {
     const email = usuarioAtual.email.toLowerCase();
     const eAdminRoot = ADMINS.includes(email);
 
-    // Registra/Atualiza o usuário no banco
     let perfilUsuario = 'vendas';
     let cardsPermitidos = PERFIS_CARDS['vendas'];
     
@@ -118,35 +116,28 @@ async function exibirDashboard() {
             perfilUsuario = userSnap.data().perfil || 'vendas';
             cardsPermitidos = userSnap.data().cardsPermitidos || PERFIS_CARDS[perfilUsuario];
         } else {
-            // Cria usuário novo (Novato Automático)
             await setDoc(userRef, { nome: usuarioAtual.displayName, email: email, perfil: perfilUsuario, cardsPermitidos: cardsPermitidos, criadoEm: new Date() });
         }
         
-        // Atualiza UI com base no Perfil
         if (perfilUsuario === 'gerencia' || perfilUsuario === 'rh' || eAdminRoot) {
-            tabEquipe.classList.remove('hidden');
-            tabAdm.classList.remove('hidden');
-            carregarVisaoGeralMetas();
-            carregarListaUsuarios();
+            tabEquipe.classList.remove('hidden'); tabAdm.classList.remove('hidden');
+            carregarVisaoGeralMetas(); carregarListaUsuarios();
         } else if (perfilUsuario === 'ti') {
-            tabAdm.classList.remove('hidden');
-            carregarListaUsuarios();
+            tabAdm.classList.remove('hidden'); carregarListaUsuarios();
         }
 
-        // Aplica as permissões dos Cards
         document.querySelectorAll('.glass-card[data-card-id]').forEach(card => {
             if (cardsPermitidos.includes(card.getAttribute('data-card-id'))) card.classList.remove('hidden');
             else card.classList.add('hidden');
         });
 
-    } catch (e) { console.error("Erro ao gerenciar usuário:", e); }
+    } catch (e) { console.error(e); }
 
     carregarAvisos();
     carregarMetasUsuario();
     carregarAgendamentos();
 }
 
-// LOGIN / LOGOUT
 loginBtn.addEventListener('click', () => {
     const txt = loginBtn.innerHTML; loginBtn.innerHTML = "Carregando...";
     if (isIOS) signInWithRedirect(auth, provider);
@@ -157,19 +148,57 @@ loginBtn.addEventListener('click', () => {
 });
 logoutBtn.addEventListener('click', () => signOut(auth).then(() => { usuarioAtual = null; }));
 
-// NAVEGAÇÃO
-tabMural.addEventListener('click', () => trocarAba(tabMural, muralContainer));
-tabMetas.addEventListener('click', () => trocarAba(tabMetas, metasContainer));
-tabApps.addEventListener('click', () => trocarAba(tabApps, appsContainer));
-tabAgenda.addEventListener('click', () => trocarAba(tabAgenda, agendaContainer));
-tabEquipe.addEventListener('click', () => trocarAba(tabEquipe, equipeContainer));
-tabAdm.addEventListener('click', () => trocarAba(tabAdm, admContainer));
-
-function trocarAba(abaAtiva, containerAtivo) {
-    [tabMural, tabMetas, tabApps, tabAgenda, tabEquipe, tabAdm].forEach(b => b.classList.remove('primary'));
-    [muralContainer, metasContainer, appsContainer, agendaContainer, equipeContainer, admContainer].forEach(c => c.classList.add('hidden'));
-    abaAtiva.classList.add('primary'); containerAtivo.classList.remove('hidden');
+function ocultarVisualizador() {
+    appViewer.src = "";
+    viewerContainer.classList.add('hidden');
+    tabsMenu.classList.remove('hidden');
 }
+
+// NAVEGAÇÃO
+[tabMural, tabMetas, tabApps, tabAgenda, tabEquipe, tabAdm].forEach((btn, index) => {
+    const containers = [muralContainer, metasContainer, appsContainer, agendaContainer, equipeContainer, admContainer];
+    btn.addEventListener('click', () => {
+        ocultarVisualizador(); // Fecha o sistema interno se tiver aberto
+        [tabMural, tabMetas, tabApps, tabAgenda, tabEquipe, tabAdm].forEach(b => b.classList.remove('primary'));
+        containers.forEach(c => c.classList.add('hidden'));
+        btn.classList.add('primary'); containers[index].classList.remove('hidden');
+    });
+});
+
+// ============================================
+// LOGICA DO VISUALIZADOR INTERNO (iFRAME)
+// ============================================
+document.querySelectorAll('.btn-track').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+        // Se o link não for do CRM, bloqueia o redirecionamento e abre internamente
+        const targetUrl = btn.getAttribute('href');
+        if(!targetUrl.includes('crm5.com.br')) {
+            e.preventDefault();
+            let finalUrl = targetUrl;
+            
+            // Força o Google Drive a exibir os Books no modo preview
+            if (finalUrl.includes('drive.google.com')) {
+                finalUrl = finalUrl.replace(/\/view.*/, '/preview');
+            }
+            
+            const sysName = btn.getAttribute('data-name');
+            viewerTitle.innerText = `Acessando: ${sysName}`;
+            appViewer.src = finalUrl;
+            
+            // Esconde TUDO e mostra o Visualizador
+            appsContainer.classList.add('hidden');
+            tabsMenu.classList.add('hidden');
+            viewerContainer.classList.remove('hidden');
+        }
+        registrarLog(`Acessou: ${btn.getAttribute('data-name')}`);
+    });
+});
+
+closeViewerBtn.addEventListener('click', () => {
+    ocultarVisualizador();
+    appsContainer.classList.remove('hidden'); // Volta para a grade
+});
+
 
 // ============================================
 // METAS E VISÃO DA EQUIPE
@@ -239,7 +268,7 @@ function carregarVisaoGeralMetas() {
 }
 
 // ============================================
-// PAINEL ADM: USUÁRIOS, PERFIS E VIP
+// PAINEL ADM E VIP
 // ============================================
 function carregarListaUsuarios() {
     onSnapshot(collection(db, "usuarios"), (snapshot) => {
@@ -250,25 +279,18 @@ function carregarListaUsuarios() {
     });
 }
 
-// Auto-preencher caixinhas ao mudar o select de perfil
 document.getElementById('user-perfil').addEventListener('change', (e) => {
-    const perfil = e.target.value;
-    const cards = PERFIS_CARDS[perfil];
-    document.querySelectorAll('.card-check').forEach(chk => {
-        chk.checked = cards.includes(chk.value);
-    });
+    const cards = PERFIS_CARDS[e.target.value];
+    document.querySelectorAll('.card-check').forEach(chk => { chk.checked = cards.includes(chk.value); });
 });
 
 document.getElementById('permissoes-form').addEventListener('submit', async (e) => {
     e.preventDefault();
     const emailT = document.getElementById('user-email-perm').value;
     if(!emailT) return alert("Selecione um usuário!");
-    const perfilSelecionado = document.getElementById('user-perfil').value;
-    const cardsMarcados = Array.from(document.querySelectorAll('.card-check:checked')).map(cb => cb.value);
-    
     try {
-        await setDoc(doc(db, "usuarios", emailT), { perfil: perfilSelecionado, cardsPermitidos: cardsMarcados }, { merge: true });
-        alert(`Acessos e perfil salvos para ${emailT}!`); e.target.reset();
+        await setDoc(doc(db, "usuarios", emailT), { perfil: document.getElementById('user-perfil').value, cardsPermitidos: Array.from(document.querySelectorAll('.card-check:checked')).map(cb => cb.value) }, { merge: true });
+        alert(`Acessos salvos!`); e.target.reset();
     } catch (err) {}
 });
 
@@ -277,30 +299,65 @@ if(vipForm) vipForm.addEventListener('submit', async (e) => {
     const emailVip = document.getElementById('vip-email').value.trim().toLowerCase();
     try {
         await setDoc(doc(db, "convidados", emailVip), { email: emailVip, adicionadoPor: usuarioAtual.email, data: new Date() });
-        alert(`✅ Acesso liberado para: ${emailVip}`); vipForm.reset();
+        alert(`✅ Acesso VIP liberado para: ${emailVip}`); vipForm.reset();
     } catch (e) {}
 });
 
 // ============================================
-// AVISOS E AGENDA
+// AVISOS E MURAL (COM 24H E IMAGEM)
 // ============================================
 avisoForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     try {
-        await addDoc(collection(db, "avisos"), { titulo: document.getElementById('aviso-titulo').value, mensagem: document.getElementById('aviso-mensagem').value, autor: usuarioAtual.displayName, dataHora: new Date() });
+        await addDoc(collection(db, "avisos"), { 
+            titulo: document.getElementById('aviso-titulo').value, 
+            mensagem: document.getElementById('aviso-mensagem').value, 
+            imagemUrl: document.getElementById('aviso-imagem').value.trim(),
+            expira24h: document.getElementById('aviso-24h').checked,
+            autor: usuarioAtual.displayName, 
+            dataHora: new Date() 
+        });
         avisoForm.reset(); alert("Comunicado publicado!"); trocarAba(tabMural, muralContainer); 
     } catch (err) {}
 });
 
 function carregarAvisos() {
-    onSnapshot(query(collection(db, "avisos"), orderBy("dataHora", "desc"), limit(10)), (snapshot) => {
-        listaAvisos.innerHTML = snapshot.empty ? "<p style='color:#94a3b8; font-size:13px;'>Nenhum aviso.</p>" : "";
+    onSnapshot(query(collection(db, "avisos"), orderBy("dataHora", "desc"), limit(20)), (snapshot) => {
+        listaAvisos.innerHTML = "";
+        const agora = Date.now();
+        let possuiAvisos = false;
+
         snapshot.forEach((docSnap) => {
-            const data = docSnap.data(); const dataStr = data.dataHora ? new Date(data.dataHora.toDate()).toLocaleString('pt-BR') : '';
-            listaAvisos.innerHTML += `<div class="rh-card"><h4>📢 ${data.titulo}</h4><p>${data.mensagem}</p><small>Por ${data.autor} em ${dataStr}</small></div>`;
+            const data = docSnap.data();
+            
+            // Verifica se expirou (maior que 24 horas = 86400000 milissegundos)
+            if (data.expira24h && data.dataHora) {
+                const tempoPost = data.dataHora.toMillis();
+                if ((agora - tempoPost) > 86400000) return; 
+            }
+            
+            possuiAvisos = true;
+            const dataStr = data.dataHora ? new Date(data.dataHora.toDate()).toLocaleString('pt-BR') : '';
+            const imgHtml = data.imagemUrl ? `<img src="${data.imagemUrl}" style="width: 100%; border-radius: 8px; margin-top: 15px; max-height: 400px; object-fit: contain;">` : '';
+            
+            listaAvisos.innerHTML += `
+                <div class="rh-card">
+                    <h4>📢 ${data.titulo}</h4>
+                    <p style="white-space: pre-wrap;">${data.mensagem}</p>
+                    ${imgHtml}
+                    <small>Por ${data.autor} em ${dataStr}</small>
+                </div>
+            `;
         });
+
+        if(!possuiAvisos) listaAvisos.innerHTML = "<p style='color:#94a3b8; font-size:13px;'>Nenhum aviso no momento.</p>";
     });
 }
+
+// ============================================
+// AGENDA E LOGS
+// ============================================
+async function registrarLog(acao) { if (usuarioAtual) addDoc(collection(db, "logs"), { email: usuarioAtual.email, nome: usuarioAtual.displayName, acao: acao, dataHora: new Date() }).catch(e => {}); }
 
 document.getElementById('notify-btn').addEventListener('click', () => { if ("Notification" in window) Notification.requestPermission().then(p => { if (p === "granted") alert("Avisos ativos!"); }); });
 
