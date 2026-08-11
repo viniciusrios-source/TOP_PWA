@@ -1,197 +1,46 @@
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-    font-family: 'Inter', sans-serif;
-}
+* { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+body { background-color: #0b0c10; color: #ffffff; min-height: 100vh; display: flex; justify-content: center; align-items: flex-start; overflow-x: hidden; padding-top: 20px; }
 
-body {
-    background-color: #0b0c10;
-    color: #ffffff;
-    min-height: 100vh;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    overflow-x: hidden;
-}
+.background-shapes { position: fixed; width: 100vw; height: 100vh; top: 0; left: 0; z-index: -1; overflow: hidden; }
+.shape { position: absolute; filter: blur(100px); border-radius: 50%; opacity: 0.5; }
+.shape-1 { background: #00d2ff; width: 350px; height: 350px; top: -50px; left: -50px; }
+.shape-2 { background: #e100ff; width: 400px; height: 400px; bottom: -100px; right: -100px; }
+.shape-3 { background: #7928ca; width: 300px; height: 300px; top: 40%; left: 40%; }
 
-/* Bolhas de Luz no Fundo */
-.background-shapes {
-    position: fixed;
-    width: 100vw;
-    height: 100vh;
-    top: 0;
-    left: 0;
-    z-index: -1;
-    overflow: hidden;
-}
+.glass-container { width: 100%; max-width: 420px; padding: 20px; margin: auto; }
+.login-box { background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 24px; padding: 40px 30px; text-align: center; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.37); }
+.login-box h2 { font-size: 24px; font-weight: 600; margin-bottom: 8px; }
+.login-box p { color: #94a3b8; font-size: 14px; margin-bottom: 24px; }
 
-.shape {
-    position: absolute;
-    filter: blur(100px);
-    border-radius: 50%;
-    opacity: 0.5;
-}
+.glass-button { background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.15); color: white; padding: 12px 20px; border-radius: 12px; font-weight: 600; cursor: pointer; transition: all 0.3s ease; display: inline-flex; align-items: center; justify-content: center; gap: 10px; text-decoration: none; border: none; }
+.glass-button:hover { background: rgba(255, 255, 255, 0.2); transform: translateY(-2px); }
+.glass-button.primary { background: linear-gradient(135deg, #00d2ff 0%, #e100ff 100%); border: none; }
+.glass-button.primary:hover { box-shadow: 0 0 20px rgba(225, 0, 255, 0.4); }
+.glass-button.full { width: 100%; }
+.glass-button.small { padding: 8px 14px; font-size: 12px; }
 
-.shape-1 {
-    background: #00d2ff;
-    width: 350px;
-    height: 350px;
-    top: -50px;
-    left: -50px;
-}
+#dashboard-section { width: 100%; max-width: 1000px; padding: 20px; min-height: 100vh; }
+.glass-header { background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.1); padding: 20px; border-radius: 20px; margin-bottom: 20px; }
 
-.shape-2 {
-    background: #e100ff;
-    width: 400px;
-    height: 400px;
-    bottom: -100px;
-    right: -100px;
-}
+.tabs-menu { display: flex; gap: 10px; margin-bottom: 25px; flex-wrap: wrap; }
+.cards-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; }
+.glass-card { background: rgba(255, 255, 255, 0.04); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 20px; padding: 24px; display: flex; flex-direction: column; justify-content: space-between; transition: all 0.3s ease; }
+.glass-card:hover { border-color: rgba(225, 0, 255, 0.4); transform: translateY(-5px); }
 
-.shape-3 {
-    background: #7928ca;
-    width: 300px;
-    height: 300px;
-    top: 40%;
-    left: 40%;
-}
+.card-content .icon { font-size: 32px; margin-bottom: 12px; }
+.card-content h3 { font-size: 18px; margin-bottom: 6px; }
+.card-content p { color: #94a3b8; font-size: 13px; margin-bottom: 20px; }
 
-/* Efeito de Vidro (Glassmorphism) */
-.glass-container {
-    width: 100%;
-    max-width: 420px;
-    padding: 20px;
-}
+/* Estilos de Avisos do RH e Barras de Progresso (Intranet) */
+.rh-card { background: rgba(234, 179, 8, 0.1); border-left: 5px solid #eab308; padding: 15px; border-radius: 10px; margin-bottom: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
+.rh-card h4 { color: #eab308; margin-bottom: 5px; font-size: 16px; }
+.rh-card p { color: #e2e8f0; font-size: 14px; white-space: pre-wrap; }
+.rh-card small { display: block; margin-top: 10px; color: #94a3b8; font-size: 11px; }
 
-.login-box {
-    background: rgba(255, 255, 255, 0.05);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 24px;
-    padding: 40px 30px;
-    text-align: center;
-    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
-}
+.prog-group { margin-bottom: 15px; }
+.prog-label { display: flex; justify-content: space-between; font-weight: 600; margin-bottom: 6px; font-size: 14px; color: #e2e8f0; }
+.bar-bg { background: rgba(0, 0, 0, 0.4); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 10px; height: 18px; overflow: hidden; padding: 2px; }
+.bar-fill { background: linear-gradient(90deg, #00d2ff 0%, #e100ff 100%); height: 100%; border-radius: 8px; transition: width 0.6s ease; box-shadow: 0 0 10px rgba(225, 0, 255, 0.5); }
 
-.login-box h2 {
-    font-size: 24px;
-    font-weight: 600;
-    margin-bottom: 8px;
-}
-
-.login-box p {
-    color: #94a3b8;
-    font-size: 14px;
-    margin-bottom: 24px;
-}
-
-/* Botões Estilizados */
-.glass-button {
-    background: rgba(255, 255, 255, 0.08);
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    color: white;
-    padding: 12px 20px;
-    border-radius: 12px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-    text-decoration: none;
-}
-
-.glass-button:hover {
-    background: rgba(255, 255, 255, 0.2);
-    transform: translateY(-2px);
-}
-
-.glass-button.primary {
-    background: linear-gradient(135deg, #00d2ff 0%, #e100ff 100%);
-    border: none;
-}
-
-.glass-button.primary:hover {
-    box-shadow: 0 0 20px rgba(225, 0, 255, 0.4);
-}
-
-.glass-button.full {
-    width: 100%;
-}
-
-.glass-button.small {
-    padding: 8px 14px;
-    font-size: 12px;
-}
-
-.google-icon {
-    width: 18px;
-    height: 18px;
-}
-
-/* Dashboard e Cards */
-#dashboard-section {
-    width: 100%;
-    max-width: 1000px;
-    padding: 20px;
-    min-height: 100vh;
-}
-
-.glass-header {
-    background: rgba(255, 255, 255, 0.05);
-    backdrop-filter: blur(12px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    padding: 20px;
-    border-radius: 20px;
-    margin-bottom: 20px;
-}
-
-.cards-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 20px;
-}
-
-.glass-card {
-    background: rgba(255, 255, 255, 0.04);
-    backdrop-filter: blur(12px);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 20px;
-    padding: 24px;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    transition: all 0.3s ease;
-}
-
-.glass-card:hover {
-    border-color: rgba(225, 0, 255, 0.4);
-    transform: translateY(-5px);
-}
-
-.card-content .icon {
-    font-size: 32px;
-    margin-bottom: 12px;
-}
-
-.card-content h3 {
-    font-size: 18px;
-    margin-bottom: 6px;
-}
-
-.card-content p {
-    color: #94a3b8;
-    font-size: 13px;
-    margin-bottom: 20px;
-}
-
-.hidden {
-    display: none !important;
-}
-
-.active {
-    display: block;
-}
+.hidden { display: none !important; }
+.active { display: block; }
