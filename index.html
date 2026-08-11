@@ -67,88 +67,67 @@
         <!-- ABA 1: MURAL DE AVISOS -->
         <div id="mural-container" class="active">
             <h3 style="margin-bottom: 20px; color: #00d2ff;">📢 Avisos e Comunicados</h3>
-            <div id="lista-avisos" style="display: flex; flex-direction: column; gap: 15px;">
-                <!-- Os avisos carregados do banco aparecerão aqui -->
-            </div>
+            <div id="lista-avisos" style="display: flex; flex-direction: column; gap: 15px;"></div>
         </div>
 
-        <!-- ABA 2: MINHAS METAS (Estrutura visual preparada para o próximo passo) -->
+        <!-- ABA 2: MINHAS METAS (VISÃO DO VENDEDOR) -->
         <div id="metas-container" class="hidden">
             <div class="glass-card" style="padding: 25px; margin-bottom: 25px;">
                 <h3 style="margin-bottom: 20px; color: #e100ff;">Meu Compromisso Mensal</h3>
                 
+                <!-- BARRAS DE PROGRESSO -->
                 <div class="prog-group">
-                    <div class="prog-label"><span>Fibra</span><span>0 / 0 (0%)</span></div>
-                    <div class="bar-bg"><div class="bar-fill" style="width: 0%;"></div></div>
+                    <div class="prog-label"><span>Fibra</span><span id="lbl-fibra">0 / 0 (0%)</span></div>
+                    <div class="bar-bg"><div id="bar-fibra" class="bar-fill" style="width: 0%;"></div></div>
                 </div>
                 <div class="prog-group">
-                    <div class="prog-label"><span>Móvel</span><span>0 / 0 (0%)</span></div>
-                    <div class="bar-bg"><div class="bar-fill" style="width: 0%;"></div></div>
+                    <div class="prog-label"><span>Móvel</span><span id="lbl-movel">0 / 0 (0%)</span></div>
+                    <div class="bar-bg"><div id="bar-movel" class="bar-fill" style="width: 0%;"></div></div>
                 </div>
                 <div class="prog-group">
-                    <div class="prog-label"><span>Avançado</span><span>0 / 0 (0%)</span></div>
-                    <div class="bar-bg"><div class="bar-fill" style="width: 0%;"></div></div>
+                    <div class="prog-label"><span>Avançado</span><span id="lbl-avancado">0 / 0 (0%)</span></div>
+                    <div class="bar-bg"><div id="bar-avancado" class="bar-fill" style="width: 0%;"></div></div>
                 </div>
                 <div class="prog-group">
-                    <div class="prog-label"><span>VVN</span><span>0 / 0 (0%)</span></div>
-                    <div class="bar-bg"><div class="bar-fill" style="width: 0%;"></div></div>
+                    <div class="prog-label"><span>VVN</span><span id="lbl-vvn">0 / 0 (0%)</span></div>
+                    <div class="bar-bg"><div id="bar-vvn" class="bar-fill" style="width: 0%;"></div></div>
                 </div>
                 
-                <p style="font-size: 11px; color: #94a3b8; font-style: italic; margin-top: 20px;">*Valores meramente ilustrativos. (Integração de dados em breve!)</p>
+                <!-- FORMULÁRIO DO VENDEDOR (SÓ ATUALIZA O REALIZADO) -->
+                <div style="margin-top: 25px; border-top: 1px dashed rgba(255,255,255,0.2); padding-top: 20px;">
+                    <h4 style="margin-bottom: 15px; color: #00d2ff;">Atualizar Meus Resultados</h4>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                        <div>
+                            <label style="font-size: 12px; color: #94a3b8;">Fibra (Realizado)</label>
+                            <input type="number" id="f-fibra" class="input-dark" placeholder="0">
+                        </div>
+                        <div>
+                            <label style="font-size: 12px; color: #94a3b8;">Móvel (Realizado)</label>
+                            <input type="number" id="f-movel" class="input-dark" placeholder="0">
+                        </div>
+                        <div>
+                            <label style="font-size: 12px; color: #94a3b8;">Avançado (Realizado)</label>
+                            <input type="number" id="f-avancado" class="input-dark" placeholder="0">
+                        </div>
+                        <div>
+                            <label style="font-size: 12px; color: #94a3b8;">VVN (Realizado)</label>
+                            <input type="number" id="f-vvn" class="input-dark" placeholder="0">
+                        </div>
+                    </div>
+                    <button id="btn-salvar-metas" class="glass-button primary" style="width: 100%; margin-top: 15px;">Salvar Resultados</button>
+                </div>
             </div>
         </div>
 
         <!-- ABA 3: LINKS RÁPIDOS -->
         <div id="apps-container" class="hidden">
             <div class="cards-grid">
-                <div class="glass-card" data-card-id="crm">
-                    <div class="card-content">
-                        <div class="icon">📈</div><h3>CRM</h3><p>Acesse o painel principal do CRM.</p>
-                    </div>
-                    <div class="card-action">
-                        <a href="https://top.crm5.com.br/" target="_blank" class="glass-button full btn-track" data-name="CRM">Acessar CRM</a>
-                    </div>
-                </div>
-                <div class="glass-card" data-card-id="mapa-nexus">
-                    <div class="card-content">
-                        <div class="icon">🗺️</div><h3>MAPA NEXUS</h3><p>Mapeamento e acompanhamento Nexus.</p>
-                    </div>
-                    <div class="card-action">
-                        <a href="https://script.google.com/macros/s/AKfycbxUsBW0gr-zTXQOwjAzBMM587IPbVhE1QXK16aNFBSl5IRplGgmNuasA1FJrZQjDNIIDQ/exec" target="_blank" class="glass-button full btn-track" data-name="MAPA NEXUS">Abrir Mapa</a>
-                    </div>
-                </div>
-                <div class="glass-card" data-card-id="top-nexus">
-                    <div class="card-content">
-                        <div class="icon">⚡</div><h3>TOP NEXUS</h3><p>Sistema principal de automação.</p>
-                    </div>
-                    <div class="card-action">
-                        <a href="https://script.google.com/macros/s/AKfycbx5S_7-KBX4iXR69OeoliWoXCv9l-lN5t9STe_DmxeR_7W--wULVOxdu-R3kht3BQ0X/exec" target="_blank" class="glass-button full btn-track" data-name="TOP NEXUS">Abrir Top Nexus</a>
-                    </div>
-                </div>
-                <div class="glass-card" data-card-id="chamados">
-                    <div class="card-content">
-                        <div class="icon">🎫</div><h3>CHAMADOS T.I</h3><p>Abertura e gestão de chamados técnicos.</p>
-                    </div>
-                    <div class="card-action">
-                        <a href="https://script.google.com/macros/s/AKfycby4rwsxmbJs9JdqXRkLXec1H6dqZJ0Jw71HE9noBDurMneftROwaaX2pWEaJxClUw7g/exec" target="_blank" class="glass-button full btn-track" data-name="Chamados">Abrir Chamados</a>
-                    </div>
-                </div>
-                <div class="glass-card" data-card-id="book-b2b">
-                    <div class="card-content">
-                        <div class="icon">💼</div><h3>BOOK B2B</h3><p>Material e documentação B2B.</p>
-                    </div>
-                    <div class="card-action">
-                        <a href="https://drive.google.com/file/d/1E3dW2tx5jH9lxnNFs1C1rFdxbWYxjBiA/view?usp=sharing" target="_blank" class="glass-button full btn-track" data-name="BOOK B2B">Abrir Book</a>
-                    </div>
-                </div>
-                <div class="glass-card" data-card-id="book-b2c">
-                    <div class="card-content">
-                        <div class="icon">🛍️</div><h3>BOOK B2C</h3><p>Material e documentação B2C.</p>
-                    </div>
-                    <div class="card-action">
-                        <a href="https://drive.google.com/file/d/1j8pgqBGL8TILckJfPEaMpg4CfkITXKxA/view?usp=sharin" target="_blank" class="glass-button full btn-track" data-name="BOOK B2C">Abrir Book</a>
-                    </div>
-                </div>
+                <div class="glass-card" data-card-id="crm"><div class="card-content"><div class="icon">📈</div><h3>CRM</h3></div><div class="card-action"><a href="https://top.crm5.com.br/" target="_blank" class="glass-button full btn-track" data-name="CRM">Acessar CRM</a></div></div>
+                <div class="glass-card" data-card-id="mapa-nexus"><div class="card-content"><div class="icon">🗺️</div><h3>MAPA NEXUS</h3></div><div class="card-action"><a href="https://script.google.com/macros/s/AKfycbxUsBW0gr-zTXQOwjAzBMM587IPbVhE1QXK16aNFBSl5IRplGgmNuasA1FJrZQjDNIIDQ/exec" target="_blank" class="glass-button full btn-track" data-name="MAPA NEXUS">Abrir Mapa</a></div></div>
+                <div class="glass-card" data-card-id="top-nexus"><div class="card-content"><div class="icon">⚡</div><h3>TOP NEXUS</h3></div><div class="card-action"><a href="https://script.google.com/macros/s/AKfycbx5S_7-KBX4iXR69OeoliWoXCv9l-lN5t9STe_DmxeR_7W--wULVOxdu-R3kht3BQ0X/exec" target="_blank" class="glass-button full btn-track" data-name="TOP NEXUS">Abrir Top Nexus</a></div></div>
+                <div class="glass-card" data-card-id="chamados"><div class="card-content"><div class="icon">🎫</div><h3>CHAMADOS T.I</h3></div><div class="card-action"><a href="https://script.google.com/macros/s/AKfycby4rwsxmbJs9JdqXRkLXec1H6dqZJ0Jw71HE9noBDurMneftROwaaX2pWEaJxClUw7g/exec" target="_blank" class="glass-button full btn-track" data-name="Chamados">Abrir Chamados</a></div></div>
+                <div class="glass-card" data-card-id="book-b2b"><div class="card-content"><div class="icon">💼</div><h3>BOOK B2B</h3></div><div class="card-action"><a href="https://drive.google.com/file/d/1E3dW2tx5jH9lxnNFs1C1rFdxbWYxjBiA/view?usp=sharing" target="_blank" class="glass-button full btn-track" data-name="BOOK B2B">Abrir Book</a></div></div>
+                <div class="glass-card" data-card-id="book-b2c"><div class="card-content"><div class="icon">🛍️</div><h3>BOOK B2C</h3></div><div class="card-action"><a href="https://drive.google.com/file/d/1j8pgqBGL8TILckJfPEaMpg4CfkITXKxA/view?usp=sharin" target="_blank" class="glass-button full btn-track" data-name="BOOK B2C">Abrir Book</a></div></div>
             </div>
         </div>
 
@@ -157,10 +136,10 @@
             <div class="glass-card" style="padding: 25px; margin-bottom: 25px;">
                 <h3 style="margin-bottom: 15px;">Novo Agendamento</h3>
                 <form id="agenda-form" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
-                    <input type="text" id="cliente-nome" placeholder="Nome do Cliente" required style="padding: 12px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.3); color: white;">
-                    <input type="tel" id="cliente-fone" placeholder="Telefone / WhatsApp" required style="padding: 12px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.3); color: white;">
-                    <input type="datetime-local" id="cliente-data" required style="padding: 12px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.3); color: white;">
-                    <input type="text" id="cliente-obs" placeholder="Observações do Retorno" style="padding: 12px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.3); color: white;">
+                    <input type="text" id="cliente-nome" class="input-dark" placeholder="Nome do Cliente" required>
+                    <input type="tel" id="cliente-fone" class="input-dark" placeholder="Telefone / WhatsApp" required>
+                    <input type="datetime-local" id="cliente-data" class="input-dark" required>
+                    <input type="text" id="cliente-obs" class="input-dark" placeholder="Observações do Retorno">
                     <button type="submit" class="glass-button primary" style="grid-column: 1 / -1;">Salvar Lembrete</button>
                 </form>
             </div>
@@ -168,24 +147,47 @@
             <div id="lista-agendamentos" style="display: flex; flex-direction: column; gap: 15px;"></div>
         </div>
 
-        <!-- ABA 5: PAINEL ADM -->
+        <!-- ABA 5: PAINEL ADM (VISÃO DO GESTOR) -->
         <div id="adm-container" class="hidden">
             
-            <!-- PUBLICAÇÃO DE AVISOS -->
+            <!-- 1. DEFINIÇÃO DE METAS INDIVIDUAIS -->
+            <div class="glass-card" style="padding: 25px; margin-bottom: 25px; border-color: rgba(168, 85, 247, 0.4);">
+                <h3 style="margin-bottom: 15px; color: #a855f7;">🎯 Definir Metas por Vendedor</h3>
+                <form id="meta-adm-form">
+                    <input type="email" id="meta-email" class="input-dark" placeholder="E-mail do Vendedor" required style="margin-bottom: 15px;">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px;">
+                        <div><label style="font-size: 12px; color: #94a3b8;">Meta Fibra</label><input type="number" id="m-fibra" class="input-dark" required></div>
+                        <div><label style="font-size: 12px; color: #94a3b8;">Meta Móvel</label><input type="number" id="m-movel" class="input-dark" required></div>
+                        <div><label style="font-size: 12px; color: #94a3b8;">Meta Avançado</label><input type="number" id="m-avancado" class="input-dark" required></div>
+                        <div><label style="font-size: 12px; color: #94a3b8;">Meta VVN</label><input type="number" id="m-vvn" class="input-dark" required></div>
+                    </div>
+                    <button type="submit" class="glass-button" style="background: linear-gradient(135deg, #a855f7 0%, #7e22ce 100%); width: 100%;">Salvar Metas do Vendedor</button>
+                </form>
+            </div>
+
+            <!-- 2. VISÃO GERAL DA EQUIPE -->
+            <div class="glass-card" style="padding: 25px; margin-bottom: 25px;">
+                <h3 style="margin-bottom: 15px;">📈 Visão Geral da Equipe</h3>
+                <div id="lista-equipe-metas" style="display: flex; flex-direction: column; gap: 15px; max-height: 400px; overflow-y: auto;">
+                    <!-- Cards de todos os vendedores aparecerão aqui -->
+                </div>
+            </div>
+
+            <!-- 3. PUBLICAÇÃO DE AVISOS -->
             <div class="glass-card" style="padding: 25px; margin-bottom: 25px; border-color: rgba(234, 179, 8, 0.4);">
                 <h3 style="margin-bottom: 15px; color: #eab308;">📢 Publicar Anúncio / Comunicado Geral</h3>
                 <form id="aviso-form">
-                    <input type="text" id="aviso-titulo" placeholder="Título do Anúncio (Ex: Reunião Geral)" required style="width: 100%; padding: 12px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.3); color: white; margin-bottom: 15px;">
-                    <textarea id="aviso-mensagem" rows="3" placeholder="Mensagem completa para a equipe..." required style="width: 100%; padding: 12px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.3); color: white; margin-bottom: 15px;"></textarea>
+                    <input type="text" id="aviso-titulo" class="input-dark" placeholder="Título do Anúncio" required style="margin-bottom: 15px;">
+                    <textarea id="aviso-mensagem" rows="3" class="input-dark" placeholder="Mensagem para a equipe..." required style="margin-bottom: 15px;"></textarea>
                     <button type="submit" class="glass-button" style="background: linear-gradient(135deg, #eab308 0%, #ca8a04 100%); width: 100%;">Publicar Comunicado</button>
                 </form>
             </div>
 
-            <!-- PERMISSÕES -->
+            <!-- 4. PERMISSÕES DE SISTEMAS -->
             <div class="glass-card" style="padding: 25px; margin-bottom: 25px;">
-                <h3 style="margin-bottom: 15px;">⚙️ Gerenciar Permissões de Cards</h3>
+                <h3 style="margin-bottom: 15px;">⚙️ Permissões de Sistemas</h3>
                 <form id="permissoes-form">
-                    <input type="email" id="user-email-perm" placeholder="E-mail do Usuário" required style="width: 100%; padding: 12px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.3); color: white; margin-bottom: 15px;">
+                    <input type="email" id="user-email-perm" class="input-dark" placeholder="E-mail do Usuário" required style="margin-bottom: 15px;">
                     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; margin-bottom: 20px;">
                         <label><input type="checkbox" class="card-check" value="crm" checked> CRM</label>
                         <label><input type="checkbox" class="card-check" value="mapa-nexus" checked> MAPA NEXUS</label>
@@ -198,11 +200,6 @@
                 </form>
             </div>
 
-            <!-- LOGS -->
-            <div class="glass-card" style="padding: 25px;">
-                <h3 style="margin-bottom: 15px;">👁️ Histórico de Acessos</h3>
-                <div id="lista-logs" style="display: flex; flex-direction: column; gap: 10px; max-height: 400px; overflow-y: auto;"></div>
-            </div>
         </div>
     </main>
 
