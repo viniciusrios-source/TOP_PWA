@@ -1,6 +1,8 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getAuth, signInWithPopup, signInWithRedirect, getRedirectResult, GoogleAuthProvider, signOut, onAuthStateChanged, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, deleteDoc, doc, setDoc, getDoc, updateDoc, arrayUnion, arrayRemove, limit } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+// NOVO: Importando o Google Analytics
+import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-analytics.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyAO-XyaXaPA5KbQo_Pue48-FXYnOGDH99s",
@@ -8,12 +10,15 @@ const firebaseConfig = {
   projectId: "pwa-top-telecom",
   storageBucket: "pwa-top-telecom.firebasestorage.app",
   messagingSenderId: "268860893450",
-  appId: "1:268860893450:web:c4875d8a97f446a62bb2f3"
+  appId: "1:268860893450:web:c4875d8a97f446a62bb2f3",
+  measurementId: "G-0B2TMLCV8N"
 };
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
+// NOVO: Iniciando o Google Analytics
+const analytics = getAnalytics(app);
 
 const provider = new GoogleAuthProvider();
 provider.setCustomParameters({ prompt: 'select_account' });
@@ -56,7 +61,6 @@ const agendaContainer = document.getElementById('agenda-container');
 const equipeContainer = document.getElementById('equipe-container');
 const admContainer = document.getElementById('adm-container');
 
-// VISUALIZADOR INTERNO
 const viewerContainer = document.getElementById('viewer-container');
 const appViewer = document.getElementById('app-viewer');
 const viewerTitle = document.getElementById('viewer-title');
@@ -166,9 +170,7 @@ function ocultarVisualizador() {
     });
 });
 
-// ============================================
 // LOGICA DO VISUALIZADOR INTERNO (iFRAME)
-// ============================================
 document.querySelectorAll('.btn-track').forEach(btn => {
     btn.addEventListener('click', (e) => {
         const targetUrl = btn.getAttribute('href');
@@ -203,9 +205,7 @@ closeViewerBtn.addEventListener('click', () => {
 });
 
 
-// ============================================
 // METAS E VISÃO DA EQUIPE
-// ============================================
 function atualizarBarraUI(nome, feito, meta) {
     const m = meta || 0; const f = feito || 0;
     const pct = m > 0 ? Math.min(Math.round((f / m) * 100), 100) : 0;
@@ -270,9 +270,7 @@ function carregarVisaoGeralMetas() {
     });
 }
 
-// ============================================
 // PAINEL ADM E VIP
-// ============================================
 function carregarListaUsuarios() {
     onSnapshot(collection(db, "usuarios"), (snapshot) => {
         let opt = '<option value="">Selecione o usuário...</option>';
@@ -306,9 +304,7 @@ if(vipForm) vipForm.addEventListener('submit', async (e) => {
     } catch (e) {}
 });
 
-// ============================================
-// AVISOS E MURAL (COM REAÇÕES E 24H)
-// ============================================
+// AVISOS E MURAL
 avisoForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     try {
@@ -319,7 +315,7 @@ avisoForm.addEventListener('submit', async (e) => {
             expira24h: document.getElementById('aviso-24h').checked,
             autor: usuarioAtual.displayName, 
             dataHora: new Date(),
-            reacoes: [] // Inicia a lista de curtidas vazia
+            reacoes: [] 
         });
         avisoForm.reset(); alert("Comunicado publicado!"); trocarAba(tabMural, muralContainer); 
     } catch (err) {}
@@ -346,7 +342,6 @@ function carregarAvisos() {
             const dataStr = data.dataHora ? new Date(data.dataHora.toDate()).toLocaleString('pt-BR') : '';
             const imgHtml = data.imagemUrl ? `<img src="${data.imagemUrl}" style="width: 100%; border-radius: 8px; margin-top: 15px; max-height: 400px; object-fit: contain;">` : '';
             
-            // Lógica do botão de curtir
             const reacoes = data.reacoes || [];
             const euCurti = reacoes.includes(usuarioAtual.email);
             const iconeCoracao = euCurti ? '❤️' : '🤍';
@@ -372,7 +367,6 @@ function carregarAvisos() {
 
         if(!possuiAvisos) listaAvisos.innerHTML = "<p style='color:#94a3b8; font-size:13px;'>Nenhum aviso no momento.</p>";
 
-        // Evento de apagar
         document.querySelectorAll('.btn-apagar-aviso').forEach(btn => {
             btn.addEventListener('click', async (e) => {
                 if(confirm("Tem certeza que deseja apagar este comunicado?")) {
@@ -381,7 +375,6 @@ function carregarAvisos() {
             });
         });
 
-        // Evento de reagir (coração)
         document.querySelectorAll('.btn-reagir').forEach(btn => {
             btn.addEventListener('click', async (e) => {
                 const idAviso = e.currentTarget.getAttribute('data-id');
@@ -391,10 +384,8 @@ function carregarAvisos() {
                 if (avisoSnap.exists()) {
                     const reacoesAtuais = avisoSnap.data().reacoes || [];
                     if (reacoesAtuais.includes(usuarioAtual.email)) {
-                        // Se já curtiu, remove o coração
                         await updateDoc(avisoRef, { reacoes: arrayRemove(usuarioAtual.email) });
                     } else {
-                        // Se não curtiu, adiciona o coração
                         await updateDoc(avisoRef, { reacoes: arrayUnion(usuarioAtual.email) });
                     }
                 }
@@ -403,9 +394,7 @@ function carregarAvisos() {
     });
 }
 
-// ============================================
 // AGENDA E LOGS
-// ============================================
 async function registrarLog(acao) { if (usuarioAtual) addDoc(collection(db, "logs"), { email: usuarioAtual.email, nome: usuarioAtual.displayName, acao: acao, dataHora: new Date() }).catch(e => {}); }
 
 document.getElementById('notify-btn').addEventListener('click', () => { if ("Notification" in window) Notification.requestPermission().then(p => { if (p === "granted") alert("Avisos ativos!"); }); });
