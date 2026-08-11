@@ -65,6 +65,15 @@
             <button id="tab-adm" class="glass-button hidden" style="background: rgba(234, 179, 8, 0.2); border-color: rgba(234, 179, 8, 0.4);">👑 Painel ADM</button>
         </div>
 
+        <!-- VISUALIZADOR DE SISTEMAS INTERNO (NOVO) -->
+        <div id="viewer-container" class="hidden glass-card" style="padding: 10px; height: 80vh; display: flex; flex-direction: column; margin-bottom: 20px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; padding: 5px;">
+                <h3 id="viewer-title" style="color: #00d2ff; font-size: 16px;">Carregando Sistema...</h3>
+                <button id="close-viewer-btn" class="glass-button small" style="background: rgba(239, 68, 68, 0.2);">✖ Fechar</button>
+            </div>
+            <iframe id="app-viewer" src="" style="width: 100%; height: 100%; border: none; border-radius: 12px; background: #ffffff;"></iframe>
+        </div>
+
         <!-- ABA 1: MURAL DE AVISOS -->
         <div id="mural-container" class="active">
             <h3 style="margin-bottom: 20px; color: #00d2ff;">📢 Avisos e Comunicados</h3>
@@ -97,18 +106,16 @@
         <!-- ABA 3: LINKS RÁPIDOS -->
         <div id="apps-container" class="hidden">
             <div class="cards-grid">
-                <div class="glass-card hidden" data-card-id="crm"><div class="card-content"><div class="icon">📈</div><h3>CRM</h3></div><div class="card-action"><a href="https://top.crm5.com.br/" target="_blank" class="glass-button full btn-track" data-name="CRM">Acessar</a></div></div>
-                <div class="glass-card hidden" data-card-id="mapa-nexus"><div class="card-content"><div class="icon">🗺️</div><h3>MAPA NEXUS</h3></div><div class="card-action"><a href="https://script.google.com/macros/s/AKfycbxUsBW0gr-zTXQOwjAzBMM587IPbVhE1QXK16aNFBSl5IRplGgmNuasA1FJrZQjDNIIDQ/exec" target="_blank" class="glass-button full btn-track" data-name="MAPA NEXUS">Acessar</a></div></div>
-                <div class="glass-card hidden" data-card-id="top-nexus"><div class="card-content"><div class="icon">⚡</div><h3>TOP NEXUS</h3></div><div class="card-action"><a href="https://script.google.com/macros/s/AKfycbx5S_7-KBX4iXR69OeoliWoXCv9l-lN5t9STe_DmxeR_7W--wULVOxdu-R3kht3BQ0X/exec" target="_blank" class="glass-button full btn-track" data-name="TOP NEXUS">Acessar</a></div></div>
+                <div class="glass-card hidden" data-card-id="crm"><div class="card-content"><div class="icon">📈</div><h3>CRM</h3></div><div class="card-action"><a href="https://top.crm5.com.br/" target="_blank" class="glass-button full btn-track" data-name="CRM">Acessar CRM</a></div></div>
+                <div class="glass-card hidden" data-card-id="mapa-nexus"><div class="card-content"><div class="icon">🗺️</div><h3>MAPA NEXUS</h3></div><div class="card-action"><a href="https://script.google.com/macros/s/AKfycbxUsBW0gr-zTXQOwjAzBMM587IPbVhE1QXK16aNFBSl5IRplGgmNuasA1FJrZQjDNIIDQ/exec" class="glass-button full btn-track" data-name="MAPA NEXUS">Abrir Mapa</a></div></div>
+                <div class="glass-card hidden" data-card-id="top-nexus"><div class="card-content"><div class="icon">⚡</div><h3>TOP NEXUS</h3></div><div class="card-action"><a href="https://script.google.com/macros/s/AKfycbx5S_7-KBX4iXR69OeoliWoXCv9l-lN5t9STe_DmxeR_7W--wULVOxdu-R3kht3BQ0X/exec" class="glass-button full btn-track" data-name="TOP NEXUS">Abrir Sistema</a></div></div>
                 
-                <!-- CHAMADOS SEPARADOS -->
-                <div class="glass-card hidden" data-card-id="chamados-abertura"><div class="card-content"><div class="icon">🎫</div><h3>ABRIR CHAMADO</h3></div><div class="card-action"><a href="https://script.google.com/macros/s/AKfycby4rwsxmbJs9JdqXRkLXec1H6dqZJ0Jw71HE9noBDurMneftROwaaX2pWEaJxClUw7g/exec" target="_blank" class="glass-button full btn-track" data-name="Abrir Chamado">Acessar</a></div></div>
-                <div class="glass-card hidden" data-card-id="chamados-acompanhamento" style="border-color: rgba(234, 179, 8, 0.4);"><div class="card-content"><div class="icon">📊</div><h3 style="color:#eab308;">ACOMPANHAR T.I</h3></div><div class="card-action"><a href="https://script.google.com/macros/s/AKfycby4rwsxmbJs9JdqXRkLXec1H6dqZJ0Jw71HE9noBDurMneftROwaaX2pWEaJxClUw7g/exec?p=Painel" target="_blank" class="glass-button full btn-track" data-name="Acompanhar Chamados">Acessar</a></div></div>
+                <div class="glass-card hidden" data-card-id="chamados-abertura"><div class="card-content"><div class="icon">🎫</div><h3>ABRIR CHAMADO</h3></div><div class="card-action"><a href="https://script.google.com/macros/s/AKfycby4rwsxmbJs9JdqXRkLXec1H6dqZJ0Jw71HE9noBDurMneftROwaaX2pWEaJxClUw7g/exec" class="glass-button full btn-track" data-name="Abrir Chamado">Solicitar T.I</a></div></div>
+                <div class="glass-card hidden" data-card-id="chamados-acompanhamento" style="border-color: rgba(234, 179, 8, 0.4);"><div class="card-content"><div class="icon">📊</div><h3 style="color:#eab308;">ACOMPANHAR T.I</h3></div><div class="card-action"><a href="https://script.google.com/macros/s/AKfycby4rwsxmbJs9JdqXRkLXec1H6dqZJ0Jw71HE9noBDurMneftROwaaX2pWEaJxClUw7g/exec?p=Painel" class="glass-button full btn-track" data-name="Acompanhar Chamados">Ver Painel</a></div></div>
                 
-                <!-- BOOKS -->
-                <div class="glass-card hidden" data-card-id="book-b2b"><div class="card-content"><div class="icon">💼</div><h3>BOOK B2B</h3></div><div class="card-action"><a href="https://drive.google.com/file/d/1E3dW2tx5jH9lxnNFs1C1rFdxbWYxjBiA/view?usp=sharing" target="_blank" class="glass-button full btn-track" data-name="BOOK B2B">Acessar</a></div></div>
-                <div class="glass-card hidden" data-card-id="book-b2c"><div class="card-content"><div class="icon">🛍️</div><h3>BOOK B2C</h3></div><div class="card-action"><a href="https://drive.google.com/file/d/1j8pgqBGL8TILckJfPEaMpg4CfkITXKxA/view?usp=sharin" target="_blank" class="glass-button full btn-track" data-name="BOOK B2C">Acessar</a></div></div>
-                <div class="glass-card hidden" data-card-id="book-avancado"><div class="card-content"><div class="icon">🚀</div><h3>BOOK AVANÇADO</h3></div><div class="card-action"><a href="https://drive.google.com/file/d/1K2n0_5AXRyoIzl5CqgEo1VPobbXCHVzq/view?usp=sharing" target="_blank" class="glass-button full btn-track" data-name="BOOK AVANÇADO">Acessar</a></div></div>
+                <div class="glass-card hidden" data-card-id="book-b2b"><div class="card-content"><div class="icon">💼</div><h3>BOOK B2B</h3></div><div class="card-action"><a href="https://drive.google.com/file/d/1E3dW2tx5jH9lxnNFs1C1rFdxbWYxjBiA/view?usp=sharing" class="glass-button full btn-track" data-name="BOOK B2B">Abrir Book</a></div></div>
+                <div class="glass-card hidden" data-card-id="book-b2c"><div class="card-content"><div class="icon">🛍️</div><h3>BOOK B2C</h3></div><div class="card-action"><a href="https://drive.google.com/file/d/1j8pgqBGL8TILckJfPEaMpg4CfkITXKxA/view?usp=sharin" class="glass-button full btn-track" data-name="BOOK B2C">Abrir Book</a></div></div>
+                <div class="glass-card hidden" data-card-id="book-avancado"><div class="card-content"><div class="icon">🚀</div><h3>BOOK AVANÇADO</h3></div><div class="card-action"><a href="https://drive.google.com/file/d/1K2n0_5AXRyoIzl5CqgEo1VPobbXCHVzq/view?usp=sharing" class="glass-button full btn-track" data-name="BOOK AVANÇADO">Abrir Book</a></div></div>
             </div>
         </div>
 
@@ -132,16 +139,13 @@
         <div id="equipe-container" class="hidden">
             <div class="glass-card" style="padding: 25px;">
                 <h3 style="margin-bottom: 15px; color: #a855f7;">📈 Visão Geral da Equipe (Metas)</h3>
-                <div id="lista-equipe-metas" style="display: flex; flex-direction: column; gap: 15px; max-height: 600px; overflow-y: auto;">
-                    <!-- Cards de metas de todos os vendedores aparecerão aqui -->
-                </div>
+                <div id="lista-equipe-metas" style="display: flex; flex-direction: column; gap: 15px; max-height: 600px; overflow-y: auto;"></div>
             </div>
         </div>
 
         <!-- ABA 6: PAINEL ADM (VISÃO DO GESTOR/TI) -->
         <div id="adm-container" class="hidden">
             
-            <!-- 1. DEFINIÇÃO DE METAS INDIVIDUAIS -->
             <div class="glass-card" style="padding: 25px; margin-bottom: 25px; border-color: rgba(168, 85, 247, 0.4);">
                 <h3 style="margin-bottom: 15px; color: #a855f7;">🎯 Definir Metas por Vendedor</h3>
                 <form id="meta-adm-form">
@@ -156,23 +160,26 @@
                 </form>
             </div>
 
-            <!-- 2. PUBLICAÇÃO DE AVISOS -->
+            <!-- MURAL DO RH: IMAGEM E TEMPORIZADOR -->
             <div class="glass-card" style="padding: 25px; margin-bottom: 25px; border-color: rgba(234, 179, 8, 0.4);">
-                <h3 style="margin-bottom: 15px; color: #eab308;">📢 Publicar Anúncio / Comunicado</h3>
+                <h3 style="margin-bottom: 15px; color: #eab308;">📢 Publicar Anúncio / Aniversários</h3>
                 <form id="aviso-form">
-                    <input type="text" id="aviso-titulo" class="input-dark" placeholder="Título do Anúncio" required style="margin-bottom: 15px;">
+                    <input type="text" id="aviso-titulo" class="input-dark" placeholder="Título (Ex: Feliz Aniversário!)" required style="margin-bottom: 15px;">
                     <textarea id="aviso-mensagem" rows="3" class="input-dark" placeholder="Mensagem para a equipe..." required style="margin-bottom: 15px;"></textarea>
+                    
+                    <input type="url" id="aviso-imagem" class="input-dark" placeholder="Link da Imagem / Foto (Opcional)" style="margin-bottom: 15px;">
+                    <label style="display: flex; align-items: center; gap: 8px; margin-bottom: 20px; font-size: 13px; color: #cbd5e1; cursor: pointer;">
+                        <input type="checkbox" id="aviso-24h" style="width: 18px; height: 18px; cursor: pointer;"> Apagar automaticamente após 24 horas
+                    </label>
+
                     <button type="submit" class="glass-button" style="background: linear-gradient(135deg, #eab308 0%, #ca8a04 100%); width: 100%;">Publicar Comunicado</button>
                 </form>
             </div>
 
-            <!-- 3. PERMISSÕES DE SISTEMAS (Com Perfis) -->
             <div class="glass-card" style="padding: 25px; margin-bottom: 25px;">
                 <h3 style="margin-bottom: 15px;">⚙️ Gerenciar Acessos e Perfis</h3>
                 <form id="permissoes-form">
                     <select id="user-email-perm" class="input-dark" required style="margin-bottom: 15px;"><option value="">Carregando usuários...</option></select>
-                    
-                    <!-- Seleção de Perfil para preencher automático -->
                     <label style="font-size: 12px; color: #94a3b8;">Perfil de Acesso (Auto-preenche as caixas):</label>
                     <select id="user-perfil" class="input-dark" required style="margin-bottom: 15px;">
                         <option value="vendas">Vendas (Padrão)</option>
@@ -180,7 +187,6 @@
                         <option value="rh">RH</option>
                         <option value="gerencia">Gerência</option>
                     </select>
-
                     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; margin-bottom: 20px;">
                         <label><input type="checkbox" class="card-check" value="crm"> CRM</label>
                         <label><input type="checkbox" class="card-check" value="mapa-nexus"> MAPA NEXUS</label>
@@ -195,7 +201,6 @@
                 </form>
             </div>
 
-            <!-- 4. LIBERAR ACESSO EXTERNO (VIP) -->
             <div class="glass-card" style="padding: 25px; border-color: rgba(16, 185, 129, 0.4);">
                 <h3 style="margin-bottom: 15px; color: #10b981;">🎟️ Liberar Acesso Externo (VIP)</h3>
                 <p style="font-size: 13px; color: #94a3b8; margin-bottom: 15px;">Autorize e-mails fora do domínio a acessarem a Intranet.</p>
@@ -204,7 +209,6 @@
                     <button type="submit" class="glass-button" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); width: 100%;">Autorizar VIP</button>
                 </form>
             </div>
-
         </div>
     </main>
 
