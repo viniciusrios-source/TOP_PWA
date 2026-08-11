@@ -21,7 +21,9 @@ setPersistence(auth, browserLocalPersistence);
 
 // COLOQUE SEU E-MAIL AQUI PARA SER O GESTOR
 const ADMINS = [
-    "pwatoptelecom@gmail.com"
+    "pwatoptelecom@gmail.com",
+    "vinicius.rios@bctel.com.br",
+    "antonio.queiros@bctel.com.br"
 ];
 
 let usuarioAtual = null;
