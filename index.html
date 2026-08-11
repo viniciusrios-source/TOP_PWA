@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>TOP Telecom - Hub de Sistemas</title>
 
-    <!-- FAVICON CORRETO -->
+    <!-- FAVICON -->
     <link rel="icon" type="image/png" href="https://i.ibb.co/r1P3kB5/top.png">
     <link rel="apple-touch-icon" href="https://i.ibb.co/r1P3kB5/top.png">
 
@@ -15,6 +15,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
+    <!-- Formas de fundo com as cores da TOP Telecom -->
     <div class="background-shapes">
         <div class="shape shape-1"></div>
         <div class="shape shape-2"></div>
@@ -56,83 +57,100 @@
             </div>
         </header>
 
-        <!-- MENU DE NAVEGAÇÃO -->
-        <div style="display: flex; gap: 10px; margin-bottom: 25px; flex-wrap: wrap;">
-            <button id="tab-apps" class="glass-button primary">🚀 Aplicativos</button>
+        <!-- MENU DE NAVEGAÇÃO ORGANIZADO POR ABAS -->
+        <div style="display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap;">
+            <button id="tab-portal" class="glass-button primary">🌐 Portal TOP Principal</button>
+            <button id="tab-apps" class="glass-button">🚀 Outros Apps & Links</button>
             <button id="tab-agenda" class="glass-button">📅 Agenda & Retornos</button>
             <button id="tab-adm" class="glass-button hidden" style="background: rgba(234, 179, 8, 0.2); border-color: rgba(234, 179, 8, 0.4);">👑 Painel ADM</button>
         </div>
 
-        <!-- SEÇÃO 1: CARDS DOS APLICATIVOS -->
-        <div id="apps-container" class="cards-grid">
-            <div class="glass-card" data-card-id="crm">
-                <div class="card-content">
-                    <div class="icon">📈</div>
-                    <h3>CRM</h3>
-                    <p>Acesse o painel principal do CRM.</p>
+        <!-- ABA PRINCIPAL: SISTEMA PORTAL TOP EMBUTIDO -->
+        <div id="portal-container" class="active">
+            <div class="glass-card" style="padding: 10px; height: 80vh; overflow: hidden; display: flex; flex-direction: column;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; padding: 5px 10px;">
+                    <span style="font-size: 14px; font-weight: 600; color: #00d2ff;">System Application - TOP Telecom</span>
+                    <a href="https://script.google.com/macros/s/AKfycbySJRoSnE6hsoAvaopmEZN5ha6lKQNxyYEcvc_Hozm3wFs5kjP4mjDjNhfH7M0NjYbwnw/exec" target="_blank" class="glass-button small" style="font-size: 11px;">Abrir em Nova Aba ↗</a>
                 </div>
-                <div class="card-action">
-                    <a href="https://top.crm5.com.br/" target="_blank" class="glass-button full btn-track" data-name="CRM">Acessar CRM</a>
-                </div>
+                <iframe src="https://script.google.com/macros/s/AKfycbySJRoSnE6hsoAvaopmEZN5ha6lKQNxyYEcvc_Hozm3wFs5kjP4mjDjNhfH7M0NjYbwnw/exec" 
+                        style="width: 100%; height: 100%; border: none; border-radius: 12px; background: #ffffff;" 
+                        allow="geolocation; microphone; camera; clipboard-write;">
+                </iframe>
             </div>
+        </div>
 
-            <div class="glass-card" data-card-id="mapa-nexus">
-                <div class="card-content">
-                    <div class="icon">🗺️</div>
-                    <h3>MAPA NEXUS</h3>
-                    <p>Mapeamento e acompanhamento Nexus.</p>
+        <!-- ABA 2: OUTROS APLICATIVOS E CARDS -->
+        <div id="apps-container" class="hidden">
+            <div class="cards-grid">
+                <div class="glass-card" data-card-id="crm">
+                    <div class="card-content">
+                        <div class="icon">📈</div>
+                        <h3>CRM</h3>
+                        <p>Acesse o painel principal do CRM.</p>
+                    </div>
+                    <div class="card-action">
+                        <a href="https://top.crm5.com.br/" target="_blank" class="glass-button full btn-track" data-name="CRM">Acessar CRM</a>
+                    </div>
                 </div>
-                <div class="card-action">
-                    <a href="https://script.google.com/macros/s/AKfycbxUsBW0gr-zTXQOwjAzBMM587IPbVhE1QXK16aNFBSl5IRplGgmNuasA1FJrZQjDNIIDQ/exec" target="_blank" class="glass-button full btn-track" data-name="MAPA NEXUS">Abrir Mapa</a>
-                </div>
-            </div>
 
-            <div class="glass-card" data-card-id="top-nexus">
-                <div class="card-content">
-                    <div class="icon">⚡</div>
-                    <h3>TOP NEXUS</h3>
-                    <p>Sistema principal de automação.</p>
+                <div class="glass-card" data-card-id="mapa-nexus">
+                    <div class="card-content">
+                        <div class="icon">🗺️</div>
+                        <h3>MAPA NEXUS</h3>
+                        <p>Mapeamento e acompanhamento Nexus.</p>
+                    </div>
+                    <div class="card-action">
+                        <a href="https://script.google.com/macros/s/AKfycbxUsBW0gr-zTXQOwjAzBMM587IPbVhE1QXK16aNFBSl5IRplGgmNuasA1FJrZQjDNIIDQ/exec" target="_blank" class="glass-button full btn-track" data-name="MAPA NEXUS">Abrir Mapa</a>
+                    </div>
                 </div>
-                <div class="card-action">
-                    <a href="https://script.google.com/macros/s/AKfycbx5S_7-KBX4iXR69OeoliWoXCv9l-lN5t9STe_DmxeR_7W--wULVOxdu-R3kht3BQ0X/exec" target="_blank" class="glass-button full btn-track" data-name="TOP NEXUS">Abrir Top Nexus</a>
-                </div>
-            </div>
 
-            <div class="glass-card" data-card-id="book-b2b">
-                <div class="card-content">
-                    <div class="icon">💼</div>
-                    <h3>BOOK B2B</h3>
-                    <p>Material e documentação B2B.</p>
+                <div class="glass-card" data-card-id="top-nexus">
+                    <div class="card-content">
+                        <div class="icon">⚡</div>
+                        <h3>TOP NEXUS</h3>
+                        <p>Sistema principal de automação.</p>
+                    </div>
+                    <div class="card-action">
+                        <a href="https://script.google.com/macros/s/AKfycbx5S_7-KBX4iXR69OeoliWoXCv9l-lN5t9STe_DmxeR_7W--wULVOxdu-R3kht3BQ0X/exec" target="_blank" class="glass-button full btn-track" data-name="TOP NEXUS">Abrir Top Nexus</a>
+                    </div>
                 </div>
-                <div class="card-action">
-                    <a href="https://drive.google.com/file/d/1E3dW2tx5jH9lxnNFs1C1rFdxbWYxjBiA/view?usp=sharing" target="_blank" class="glass-button full btn-track" data-name="BOOK B2B">Abrir Book</a>
-                </div>
-            </div>
 
-            <div class="glass-card" data-card-id="book-b2c">
-                <div class="card-content">
-                    <div class="icon">🛍️</div>
-                    <h3>BOOK B2C</h3>
-                    <p>Material e documentação B2C.</p>
+                <div class="glass-card" data-card-id="book-b2b">
+                    <div class="card-content">
+                        <div class="icon">💼</div>
+                        <h3>BOOK B2B</h3>
+                        <p>Material e documentação B2B.</p>
+                    </div>
+                    <div class="card-action">
+                        <a href="https://drive.google.com/file/d/1E3dW2tx5jH9lxnNFs1C1rFdxbWYxjBiA/view?usp=sharing" target="_blank" class="glass-button full btn-track" data-name="BOOK B2B">Abrir Book</a>
+                    </div>
                 </div>
-                <div class="card-action">
-                    <a href="https://drive.google.com/file/d/1j8pgqBGL8TILckJfPEaMpg4CfkITXKxA/view?usp=sharin" target="_blank" class="glass-button full btn-track" data-name="BOOK B2C">Abrir Book</a>
-                </div>
-            </div>
 
-            <div class="glass-card" data-card-id="book-avancado">
-                <div class="card-content">
-                    <div class="icon">🚀</div>
-                    <h3>BOOK AVANÇADO</h3>
-                    <p>Documentação e treinos avançados.</p>
+                <div class="glass-card" data-card-id="book-b2c">
+                    <div class="card-content">
+                        <div class="icon">🛍️</div>
+                        <h3>BOOK B2C</h3>
+                        <p>Material e documentação B2C.</p>
+                    </div>
+                    <div class="card-action">
+                        <a href="https://drive.google.com/file/d/1j8pgqBGL8TILckJfPEaMpg4CfkITXKxA/view?usp=sharin" target="_blank" class="glass-button full btn-track" data-name="BOOK B2C">Abrir Book</a>
+                    </div>
                 </div>
-                <div class="card-action">
-                    <a href="https://drive.google.com/file/d/1K2n0_5AXRyoIzl5CqgEo1VPobbXCHVzq/view?usp=sharing" target="_blank" class="glass-button full btn-track" data-name="BOOK AVANÇADO">Abrir Book</a>
+
+                <div class="glass-card" data-card-id="book-avancado">
+                    <div class="card-content">
+                        <div class="icon">🚀</div>
+                        <h3>BOOK AVANÇADO</h3>
+                        <p>Documentação e treinos avançados.</p>
+                    </div>
+                    <div class="card-action">
+                        <a href="https://drive.google.com/file/d/1K2n0_5AXRyoIzl5CqgEo1VPobbXCHVzq/view?usp=sharing" target="_blank" class="glass-button full btn-track" data-name="BOOK AVANÇADO">Abrir Book</a>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <!-- SEÇÃO 2: AGENDA DE CLIENTES -->
+        <!-- ABA 3: AGENDA DE CLIENTES -->
         <div id="agenda-container" class="hidden">
             <div class="glass-card" style="padding: 25px; margin-bottom: 25px;">
                 <h3 style="margin-bottom: 15px;">Novo Agendamento</h3>
@@ -149,7 +167,7 @@
             <div id="lista-agendamentos" style="display: flex; flex-direction: column; gap: 15px;"></div>
         </div>
 
-        <!-- SEÇÃO 3: PAINEL ADM -->
+        <!-- ABA 4: PAINEL ADM -->
         <div id="adm-container" class="hidden">
             <div class="glass-card" style="padding: 25px; margin-bottom: 25px;">
                 <h3 style="margin-bottom: 15px;">⚙️ Gerenciar Permissões por Usuário</h3>
