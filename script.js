@@ -81,6 +81,15 @@ async function exibirDashboard() {
     dashboardSection.classList.add('active');
     
     userGreeting.innerText = `Olá, ${usuarioAtual.displayName}!`;
+  
+  // SALVA/ATUALIZA O USUÁRIO NO BANCO DE DADOS
+    try {
+        await setDoc(doc(db, "usuarios", usuarioAtual.email.toLowerCase()), {
+            nome: usuarioAtual.displayName,
+            email: usuarioAtual.email.toLowerCase(),
+            ultimoAcesso: new Date()
+        }, { merge: true });
+    } catch (e) { console.error("Erro ao salvar user", e); }
 
     const eAdmin = ADMINS.includes(usuarioAtual.email.toLowerCase());
     if (eAdmin) {
