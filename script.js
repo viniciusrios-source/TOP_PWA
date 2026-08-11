@@ -16,7 +16,6 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 const provider = new GoogleAuthProvider();
 
-// Força o Firebase a gravar o login no armazenamento local (essencial para iPhone/Safari)
 setPersistence(auth, browserLocalPersistence);
 
 const ADMINS = [
@@ -32,10 +31,12 @@ const loginSection = document.getElementById('login-section');
 const dashboardSection = document.getElementById('dashboard-section');
 const userGreeting = document.getElementById('user-greeting');
 
+const tabPortal = document.getElementById('tab-portal');
 const tabApps = document.getElementById('tab-apps');
 const tabAgenda = document.getElementById('tab-agenda');
 const tabAdm = document.getElementById('tab-adm');
 
+const portalContainer = document.getElementById('portal-container');
 const appsContainer = document.getElementById('apps-container');
 const agendaContainer = document.getElementById('agenda-container');
 const admContainer = document.getElementById('adm-container');
@@ -47,7 +48,7 @@ const listaAgendamentos = document.getElementById('lista-agendamentos');
 const permissoesForm = document.getElementById('permissoes-form');
 const listaLogs = document.getElementById('lista-logs');
 
-// MONITOR DE SESSÃO (Recupera o login automático no iPhone e PC)
+// MONITOR DE SESSÃO AUTOMÁTICO
 onAuthStateChanged(auth, async (user) => {
     if (user) {
         usuarioAtual = user;
@@ -78,7 +79,7 @@ async function exibirDashboard() {
     carregarAgendamentos();
 }
 
-// BOTÃO DE LOGIN
+// LOGIN
 loginBtn.addEventListener('click', () => {
     const textoOriginal = loginBtn.innerHTML;
     loginBtn.innerHTML = "Carregando...";
@@ -111,6 +112,7 @@ logoutBtn.addEventListener('click', () => {
 });
 
 // NAVEGAÇÃO ENTRE ABAS
+tabPortal.addEventListener('click', () => trocarAba(tabPortal, portalContainer));
 tabApps.addEventListener('click', () => trocarAba(tabApps, appsContainer));
 tabAgenda.addEventListener('click', () => trocarAba(tabAgenda, agendaContainer));
 tabAdm.addEventListener('click', () => {
@@ -119,8 +121,8 @@ tabAdm.addEventListener('click', () => {
 });
 
 function trocarAba(abaAtiva, containerAtivo) {
-    [tabApps, tabAgenda, tabAdm].forEach(b => b.classList.remove('primary'));
-    [appsContainer, agendaContainer, admContainer].forEach(c => c.classList.add('hidden'));
+    [tabPortal, tabApps, tabAgenda, tabAdm].forEach(b => b.classList.remove('primary'));
+    [portalContainer, appsContainer, agendaContainer, admContainer].forEach(c => c.classList.add('hidden'));
     
     abaAtiva.classList.add('primary');
     containerAtivo.classList.remove('hidden');
@@ -153,7 +155,7 @@ async function aplicarPermissoes(email, eAdmin) {
     }
 }
 
-// RASTREAMENTO DE LOGS
+// LOGS
 document.querySelectorAll('.btn-track').forEach(btn => {
     btn.addEventListener('click', (e) => {
         const cardName = e.target.getAttribute('data-name');
