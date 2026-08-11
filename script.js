@@ -1,6 +1,6 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getAuth, signInWithPopup, signInWithRedirect, getRedirectResult, GoogleAuthProvider, signOut, onAuthStateChanged, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, deleteDoc, doc, setDoc, getDoc, limit } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, deleteDoc, doc, setDoc, getDoc, updateDoc, arrayUnion, arrayRemove, limit } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyAO-XyaXaPA5KbQo_Pue48-FXYnOGDH99s",
@@ -33,6 +33,8 @@ const PERFIS_CARDS = {
 };
 
 let usuarioAtual = null;
+let perfilAtual = 'vendas';
+let eAdminRoot = false;     
 
 const loginBtn = document.getElementById('login-btn');
 const logoutBtn = document.getElementById('logout-btn');
@@ -103,9 +105,8 @@ async function exibirDashboard() {
     userGreeting.innerText = `Olá, ${usuarioAtual.displayName}!`;
 
     const email = usuarioAtual.email.toLowerCase();
-    const eAdminRoot = ADMINS.includes(email);
+    eAdminRoot = ADMINS.includes(email);
 
-    let perfilUsuario = 'vendas';
     let cardsPermitidos = PERFIS_CARDS['vendas'];
     
     try {
@@ -113,16 +114,16 @@ async function exibirDashboard() {
         const userSnap = await getDoc(userRef);
         
         if (userSnap.exists()) {
-            perfilUsuario = userSnap.data().perfil || 'vendas';
-            cardsPermitidos = userSnap.data().cardsPermitidos || PERFIS_CARDS[perfilUsuario];
+            perfilAtual = userSnap.data().perfil || 'vendas';
+            cardsPermitidos = userSnap.data().cardsPermitidos || PERFIS_CARDS[perfilAtual];
         } else {
-            await setDoc(userRef, { nome: usuarioAtual.displayName, email: email, perfil: perfilUsuario, cardsPermitidos: cardsPermitidos, criadoEm: new Date() });
+            await setDoc(userRef, { nome: usuarioAtual.displayName, email: email, perfil: perfilAtual, cardsPermitidos: cardsPermitidos, criadoEm: new Date() });
         }
         
-        if (perfilUsuario === 'gerencia' || perfilUsuario === 'rh' || eAdminRoot) {
+        if (perfilAtual === 'gerencia' || perfilAtual === 'rh' || eAdminRoot) {
             tabEquipe.classList.remove('hidden'); tabAdm.classList.remove('hidden');
             carregarVisaoGeralMetas(); carregarListaUsuarios();
-        } else if (perfilUsuario === 'ti') {
+        } else if (perfilAtual === 'ti') {
             tabAdm.classList.remove('hidden'); carregarListaUsuarios();
         }
 
@@ -158,7 +159,7 @@ function ocultarVisualizador() {
 [tabMural, tabMetas, tabApps, tabAgenda, tabEquipe, tabAdm].forEach((btn, index) => {
     const containers = [muralContainer, metasContainer, appsContainer, agendaContainer, equipeContainer, admContainer];
     btn.addEventListener('click', () => {
-        ocultarVisualizador(); // Fecha o sistema interno se tiver aberto
+        ocultarVisualizador();
         [tabMural, tabMetas, tabApps, tabAgenda, tabEquipe, tabAdm].forEach(b => b.classList.remove('primary'));
         containers.forEach(c => c.classList.add('hidden'));
         btn.classList.add('primary'); containers[index].classList.remove('hidden');
@@ -170,33 +171,35 @@ function ocultarVisualizador() {
 // ============================================
 document.querySelectorAll('.btn-track').forEach(btn => {
     btn.addEventListener('click', (e) => {
-        // Se o link não for do CRM, bloqueia o redirecionamento e abre internamente
         const targetUrl = btn.getAttribute('href');
-        if(!targetUrl.includes('crm5.com.br')) {
-            e.preventDefault();
-            let finalUrl = targetUrl;
-            
-            // Força o Google Drive a exibir os Books no modo preview
-            if (finalUrl.includes('drive.google.com')) {
-                finalUrl = finalUrl.replace(/\/view.*/, '/preview');
-            }
-            
-            const sysName = btn.getAttribute('data-name');
-            viewerTitle.innerText = `Acessando: ${sysName}`;
-            appViewer.src = finalUrl;
-            
-            // Esconde TUDO e mostra o Visualizador
-            appsContainer.classList.add('hidden');
-            tabsMenu.classList.add('hidden');
-            viewerContainer.classList.remove('hidden');
+        const sysName = btn.getAttribute('data-name');
+        
+        if(targetUrl.includes('crm5.com.br') || targetUrl.includes('script.google.com')) {
+            registrarLog(`Acessou Externamente: ${sysName}`);
+            return; 
         }
-        registrarLog(`Acessou: ${btn.getAttribute('data-name')}`);
+
+        e.preventDefault();
+        let finalUrl = targetUrl;
+        
+        if (finalUrl.includes('drive.google.com')) {
+            finalUrl = finalUrl.replace(/\/view.*/, '/preview');
+        }
+        
+        viewerTitle.innerText = `Acessando: ${sysName}`;
+        appViewer.src = finalUrl;
+        
+        appsContainer.classList.add('hidden');
+        tabsMenu.classList.add('hidden');
+        viewerContainer.classList.remove('hidden');
+        
+        registrarLog(`Acessou Internamente: ${sysName}`);
     });
 });
 
 closeViewerBtn.addEventListener('click', () => {
     ocultarVisualizador();
-    appsContainer.classList.remove('hidden'); // Volta para a grade
+    appsContainer.classList.remove('hidden'); 
 });
 
 
@@ -304,7 +307,7 @@ if(vipForm) vipForm.addEventListener('submit', async (e) => {
 });
 
 // ============================================
-// AVISOS E MURAL (COM 24H E IMAGEM)
+// AVISOS E MURAL (COM REAÇÕES E 24H)
 // ============================================
 avisoForm.addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -315,7 +318,8 @@ avisoForm.addEventListener('submit', async (e) => {
             imagemUrl: document.getElementById('aviso-imagem').value.trim(),
             expira24h: document.getElementById('aviso-24h').checked,
             autor: usuarioAtual.displayName, 
-            dataHora: new Date() 
+            dataHora: new Date(),
+            reacoes: [] // Inicia a lista de curtidas vazia
         });
         avisoForm.reset(); alert("Comunicado publicado!"); trocarAba(tabMural, muralContainer); 
     } catch (err) {}
@@ -326,11 +330,13 @@ function carregarAvisos() {
         listaAvisos.innerHTML = "";
         const agora = Date.now();
         let possuiAvisos = false;
+        
+        const podeApagar = eAdminRoot || perfilAtual === 'gerencia' || perfilAtual === 'rh' || perfilAtual === 'ti';
 
         snapshot.forEach((docSnap) => {
             const data = docSnap.data();
+            const idAviso = docSnap.id;
             
-            // Verifica se expirou (maior que 24 horas = 86400000 milissegundos)
             if (data.expira24h && data.dataHora) {
                 const tempoPost = data.dataHora.toMillis();
                 if ((agora - tempoPost) > 86400000) return; 
@@ -340,17 +346,60 @@ function carregarAvisos() {
             const dataStr = data.dataHora ? new Date(data.dataHora.toDate()).toLocaleString('pt-BR') : '';
             const imgHtml = data.imagemUrl ? `<img src="${data.imagemUrl}" style="width: 100%; border-radius: 8px; margin-top: 15px; max-height: 400px; object-fit: contain;">` : '';
             
+            // Lógica do botão de curtir
+            const reacoes = data.reacoes || [];
+            const euCurti = reacoes.includes(usuarioAtual.email);
+            const iconeCoracao = euCurti ? '❤️' : '🤍';
+            const corBotao = euCurti ? 'rgba(239, 68, 68, 0.2)' : 'rgba(255, 255, 255, 0.05)';
+            
+            const btnApagar = podeApagar ? `<button class="glass-button small btn-apagar-aviso" data-id="${idAviso}" style="background: rgba(239, 68, 68, 0.1); color: #f87171; border: none; padding: 6px 12px; margin-left: auto;">🗑️</button>` : '';
+
             listaAvisos.innerHTML += `
                 <div class="rh-card">
                     <h4>📢 ${data.titulo}</h4>
                     <p style="white-space: pre-wrap;">${data.mensagem}</p>
                     ${imgHtml}
-                    <small>Por ${data.autor} em ${dataStr}</small>
+                    <div style="display: flex; align-items: center; gap: 10px; margin-top: 15px; flex-wrap: wrap;">
+                        <button class="glass-button small btn-reagir" data-id="${idAviso}" style="background: ${corBotao}; border: 1px solid rgba(255,255,255,0.1); padding: 6px 12px; transition: all 0.2s ease;">
+                            ${iconeCoracao} ${reacoes.length}
+                        </button>
+                        <small style="color: #94a3b8; font-size: 11px;">Por ${data.autor} em ${dataStr}</small>
+                        ${btnApagar}
+                    </div>
                 </div>
             `;
         });
 
         if(!possuiAvisos) listaAvisos.innerHTML = "<p style='color:#94a3b8; font-size:13px;'>Nenhum aviso no momento.</p>";
+
+        // Evento de apagar
+        document.querySelectorAll('.btn-apagar-aviso').forEach(btn => {
+            btn.addEventListener('click', async (e) => {
+                if(confirm("Tem certeza que deseja apagar este comunicado?")) {
+                    await deleteDoc(doc(db, "avisos", e.currentTarget.getAttribute('data-id')));
+                }
+            });
+        });
+
+        // Evento de reagir (coração)
+        document.querySelectorAll('.btn-reagir').forEach(btn => {
+            btn.addEventListener('click', async (e) => {
+                const idAviso = e.currentTarget.getAttribute('data-id');
+                const avisoRef = doc(db, "avisos", idAviso);
+                const avisoSnap = await getDoc(avisoRef);
+                
+                if (avisoSnap.exists()) {
+                    const reacoesAtuais = avisoSnap.data().reacoes || [];
+                    if (reacoesAtuais.includes(usuarioAtual.email)) {
+                        // Se já curtiu, remove o coração
+                        await updateDoc(avisoRef, { reacoes: arrayRemove(usuarioAtual.email) });
+                    } else {
+                        // Se não curtiu, adiciona o coração
+                        await updateDoc(avisoRef, { reacoes: arrayUnion(usuarioAtual.email) });
+                    }
+                }
+            });
+        });
     });
 }
 
