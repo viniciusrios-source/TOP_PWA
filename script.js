@@ -610,8 +610,7 @@ if (uploadHorasForm) {
     });
 }
 
-// LOGICA DE CARTEIRA / CRM (UPLOAD EM LOTES E VISUALIZAÇÃO)
-
+// LOGICA DE CARTEIRA / CRM (UPLOAD E PAGINAÇÃO UNIFICADA)
 function calcularMeses(dataStr) {
     if (!dataStr || !dataStr.includes('/')) return null;
     const partes = dataStr.split('/');
@@ -687,9 +686,7 @@ if (uploadCarteiraForm) {
                 }
             }
             
-            if (countInBatch > 0) {
-                batches.push(currentBatch.commit());
-            }
+            if (countInBatch > 0) batches.push(currentBatch.commit());
 
             try {
                 await Promise.all(batches);
@@ -710,19 +707,60 @@ if (uploadCarteiraForm) {
 function carregarCarteira() {
     if (!usuarioAtual) return;
     
+    const filtroGestor = document.getElementById('filtro-gestor-carteira');
+    const filtroQtd = document.getElementById('filtro-qtd-carteira');
+    const areaResumo = document.getElementById('area-resumo-carteira');
+    const areaLista = document.getElementById('area-lista-carteira');
+    
+    const listaGestao = document.getElementById('lista-gestao-carteira');
     const listaPendentes = document.getElementById('lista-oportunidades-pendentes');
     const listaContatados = document.getElementById('lista-oportunidades-contatadas');
-    const visaoGestao = document.getElementById('visao-gestao-carteira');
-    const listaGestao = document.getElementById('lista-gestao-carteira');
+    
+    const badgePendentes = document.getElementById('badge-pendentes');
+    const badgeContatados = document.getElementById('badge-contatados');
     
     let eVisaoGeral = (perfilAtual === 'rh' || perfilAtual === 'gerencia' || eAdminRoot);
-    
-    if (eVisaoGeral) {
-        visaoGestao.classList.remove('hidden');
-        onSnapshot(collection(db, "carteira"), (snapshot) => {
+    if (eVisaoGeral && filtroGestor) filtroGestor.classList.remove('hidden');
+
+    let consultaBase = eVisaoGeral ? collection(db, "carteira") : query(collection(db, "carteira"), where("emailVendedor", "==", usuarioAtual.email.toLowerCase()));
+    let todosDados = [];
+
+    onSnapshot(consultaBase, (snapshot) => {
+        todosDados = [];
+        let vendedoresUnicos = new Set();
+        
+        snapshot.forEach(docSnap => {
+            const d = docSnap.data();
+            d.id = docSnap.id;
+            todosDados.push(d);
+            vendedoresUnicos.add(d.emailVendedor);
+        });
+
+        if (eVisaoGeral) {
+            let valorAtual = filtroGestor.value || 'resumo';
+            let optionsHTML = `<option value="resumo">📊 Resumo da Equipe</option><option value="minha">👤 Minha Carteira</option>`;
+            vendedoresUnicos.forEach(email => {
+                if(email !== usuarioAtual.email.toLowerCase()){
+                    optionsHTML += `<option value="${email}">Equipe: ${email}</option>`;
+                }
+            });
+            filtroGestor.innerHTML = optionsHTML;
+            filtroGestor.value = valorAtual;
+        }
+
+        renderizarTelaCarteira();
+    });
+
+    function renderizarTelaCarteira() {
+        let visaoSelecionada = eVisaoGeral ? filtroGestor.value : 'minha';
+        
+        if (visaoSelecionada === 'resumo') {
+            areaResumo.classList.remove('hidden');
+            areaLista.classList.add('hidden');
+            filtroQtd.classList.add('hidden');
+            
             let stats = {};
-            snapshot.forEach(docSnap => {
-                const d = docSnap.data();
+            todosDados.forEach(d => {
                 if (!stats[d.emailVendedor]) stats[d.emailVendedor] = { total: 0, contatados: 0 };
                 stats[d.emailVendedor].total++;
                 if (d.contatado) stats[d.emailVendedor].contatados++;
@@ -730,15 +768,17 @@ function carregarCarteira() {
             
             listaGestao.innerHTML = "";
             let temAlguem = false;
-            
             for (let email in stats) {
                 temAlguem = true;
                 const s = stats[email];
                 const pct = s.total > 0 ? Math.round((s.contatados / s.total) * 100) : 0;
                 
                 listaGestao.innerHTML += `
-                    <div style="background: rgba(0,0,0,0.4); padding: 15px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
-                        <strong style="color: #a855f7; font-size: 14px;">👤 ${email}</strong>
+                    <div style="background: rgba(0,0,0,0.4); padding: 15px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05); cursor: pointer; transition: 0.2s;" onmouseover="this.style.borderColor='rgba(168,85,247,0.5)'" onmouseout="this.style.borderColor='rgba(255,255,255,0.05)'" onclick="document.getElementById('filtro-gestor-carteira').value = '${email}'; document.getElementById('filtro-gestor-carteira').dispatchEvent(new Event('change'));">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <strong style="color: #a855f7; font-size: 14px;">👤 ${email}</strong>
+                            <span style="font-size: 11px; color: #94a3b8; background: rgba(255,255,255,0.1); padding: 2px 8px; border-radius: 10px;">Ver Lista 🔍</span>
+                        </div>
                         <div style="display: flex; justify-content: space-between; margin-top: 10px; font-size: 13px; color: #cbd5e1;">
                             <span>Total Contratos: ${s.total}</span>
                             <span style="color: #10b981;">Abordados: ${s.contatados} (${pct}%)</span>
@@ -750,68 +790,104 @@ function carregarCarteira() {
                 `;
             }
             if(!temAlguem) listaGestao.innerHTML = "<p style='color:#94a3b8; font-size:13px;'>Nenhuma carteira carregada no sistema.</p>";
-        });
-    }
-
-    const qVendedor = query(collection(db, "carteira"), where("emailVendedor", "==", usuarioAtual.email.toLowerCase()));
-    onSnapshot(qVendedor, (snapshot) => {
-        listaPendentes.innerHTML = "";
-        listaContatados.innerHTML = "";
-        
-        snapshot.forEach(docSnap => {
-            const d = docSnap.data();
-            let tags = '';
             
-            let mesesVida = calcularMeses(d.dataVenda);
-            let badgeM = mesesVida !== null ? ` <strong style="color:#fff;">(M${mesesVida})</strong>` : '';
+        } else {
+            areaResumo.classList.add('hidden');
+            areaLista.classList.remove('hidden');
+            filtroQtd.classList.remove('hidden'); 
             
-            if (d.movel) tags += `<span style="background: rgba(59,130,246,0.2); color: #60a5fa; padding: 3px 8px; border-radius: 4px; font-size: 11px;">📱 Móvel: ${d.movel}${badgeM}</span>`;
-            if (d.fixa) tags += `<span style="background: rgba(234,179,8,0.2); color: #facc15; padding: 3px 8px; border-radius: 4px; font-size: 11px;">☎️ Fixa: ${d.fixa}${badgeM}</span>`;
+            let emailAlvo = visaoSelecionada === 'minha' ? usuarioAtual.email.toLowerCase() : visaoSelecionada;
+            let pendentesArray = [];
+            let contatadosArray = [];
             
-            // Inteligência para o valor do Aparelho
-            if (d.aparelho && d.aparelho.trim() !== '0' && d.aparelho.trim() !== '0,00' && d.aparelho.trim() !== '') {
-                let valorFormatado = d.aparelho.includes('R$') ? d.aparelho : `R$ ${d.aparelho}`;
-                tags += `<span style="background: rgba(236,72,153,0.2); color: #f472b6; padding: 3px 8px; border-radius: 4px; font-size: 11px;">📲 Aparelho: ${valorFormatado}</span>`;
-            }
-            
-            const btnAcao = !d.contatado 
-                ? `<button class="glass-button small btn-contatar" data-id="${docSnap.id}" style="background: rgba(16, 185, 129, 0.2); color: #10b981; border-color: rgba(16, 185, 129, 0.4); white-space: nowrap;">✅ Já Contatei</button>` 
-                : `<span style="font-size: 12px; color: #10b981; border: 1px solid rgba(16, 185, 129, 0.4); padding: 5px 10px; border-radius: 6px;">✔️ Abordado</span>`;
-            
-            let infoExtra = `CNPJ: ${d.cnpj}`;
-            if (d.dataVenda) infoExtra += ` | 📅 Venda: ${d.dataVenda}`;
-            
-            const card = `
-                <div style="background: rgba(0,0,0,0.4); padding: 15px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05); display: flex; justify-content: space-between; align-items: center; gap: 15px; flex-wrap: wrap;">
-                    <div style="flex: 1;">
-                        <strong style="color: #fff; font-size: 15px; display: block; margin-bottom: 5px;">🏢 ${d.razaoSocial}</strong>
-                        <div style="font-size: 12px; color: #94a3b8; margin-bottom: 10px; font-family: monospace;">${infoExtra}</div>
-                        <div style="display: flex; gap: 8px; flex-wrap: wrap;">${tags}</div>
-                    </div>
-                    <div>
-                        ${btnAcao}
-                    </div>
-                </div>
-            `;
-            
-            if (d.contatado) {
-                listaContatados.innerHTML += card;
-            } else {
-                listaPendentes.innerHTML += card;
-            }
-        });
-        
-        if (listaPendentes.innerHTML === "") listaPendentes.innerHTML = "<p style='color:#94a3b8; font-size:13px; text-align: center; padding: 15px;'>🎉 Você não tem oportunidades pendentes na sua carteira.</p>";
-        if (listaContatados.innerHTML === "") listaContatados.innerHTML = "<p style='color:#94a3b8; font-size:13px;'>Nenhum histórico de contatos recente.</p>";
-        
-        document.querySelectorAll('.btn-contatar').forEach(btn => {
-            btn.addEventListener('click', async (e) => {
-                const idDoc = e.target.getAttribute('data-id');
-                btn.innerHTML = "Salvando...";
-                await updateDoc(doc(db, "carteira", idDoc), { contatado: true, dataContato: new Date() });
+            todosDados.forEach(d => {
+                if (d.emailVendedor === emailAlvo) {
+                    if (d.contatado) contatadosArray.push(d);
+                    else pendentesArray.push(d);
+                }
             });
-        });
-    });
+            
+            badgePendentes.innerText = pendentesArray.length;
+            badgeContatados.innerText = `(Total: ${contatadosArray.length})`;
+            
+            listaPendentes.innerHTML = "";
+            listaContatados.innerHTML = "";
+            
+            let qtdSelecionada = filtroQtd.value;
+            let limite = qtdSelecionada === "todos" ? pendentesArray.length : parseInt(qtdSelecionada);
+            let pendentesMostrados = pendentesArray.slice(0, limite);
+            
+            pendentesMostrados.forEach(d => {
+                let tags = '';
+                let mesesVida = calcularMeses(d.dataVenda);
+                let badgeM = mesesVida !== null ? ` <strong style="color:#fff;">(M${mesesVida})</strong>` : '';
+                
+                if (d.movel) tags += `<span style="background: rgba(59,130,246,0.2); color: #60a5fa; padding: 3px 8px; border-radius: 4px; font-size: 11px;">📱 Móvel: ${d.movel}${badgeM}</span>`;
+                if (d.fixa) tags += `<span style="background: rgba(234,179,8,0.2); color: #facc15; padding: 3px 8px; border-radius: 4px; font-size: 11px;">☎️ Fixa: ${d.fixa}${badgeM}</span>`;
+                if (d.aparelho && d.aparelho.trim() !== '0' && d.aparelho.trim() !== '0,00' && d.aparelho.trim() !== '') {
+                    let valorFormatado = d.aparelho.includes('R$') ? d.aparelho : `R$ ${d.aparelho}`;
+                    tags += `<span style="background: rgba(236,72,153,0.2); color: #f472b6; padding: 3px 8px; border-radius: 4px; font-size: 11px;">📲 Aparelho: ${valorFormatado}</span>`;
+                }
+                
+                let infoExtra = `CNPJ: ${d.cnpj}`;
+                if (d.dataVenda) infoExtra += ` | 📅 Venda: ${d.dataVenda}`;
+                
+                listaPendentes.innerHTML += `
+                    <div style="background: rgba(0,0,0,0.4); padding: 15px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05); display: flex; justify-content: space-between; align-items: center; gap: 15px; flex-wrap: wrap;">
+                        <div style="flex: 1;">
+                            <strong style="color: #fff; font-size: 15px; display: block; margin-bottom: 5px;">🏢 ${d.razaoSocial}</strong>
+                            <div style="font-size: 12px; color: #94a3b8; margin-bottom: 10px; font-family: monospace;">${infoExtra}</div>
+                            <div style="display: flex; gap: 8px; flex-wrap: wrap;">${tags}</div>
+                        </div>
+                        <div>
+                            <button class="glass-button small btn-contatar" data-id="${d.id}" style="background: rgba(16, 185, 129, 0.2); color: #10b981; border-color: rgba(16, 185, 129, 0.4); white-space: nowrap;">✅ Já Contatei</button>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            if (pendentesArray.length > limite) {
+                listaPendentes.innerHTML += `<div style="text-align: center; color: #94a3b8; font-size: 12px; padding: 15px; border: 1px dashed rgba(255,255,255,0.1); border-radius: 8px; margin-top: 10px;">Mostrando ${limite} de ${pendentesArray.length} clientes pendentes. Altere o filtro de quantidade para ver mais.</div>`;
+            } else if (pendentesArray.length === 0) {
+                listaPendentes.innerHTML = "<p style='color:#94a3b8; font-size:13px; text-align: center; padding: 15px;'>🎉 A fila está zerada! Nenhuma oportunidade pendente.</p>";
+            }
+
+            let contatadosMostrados = contatadosArray.slice(0, 10);
+            contatadosMostrados.forEach(d => {
+                let infoExtra = `CNPJ: ${d.cnpj}`;
+                if (d.dataVenda) infoExtra += ` | 📅 Venda: ${d.dataVenda}`;
+                
+                listaContatados.innerHTML += `
+                    <div style="background: rgba(0,0,0,0.4); padding: 15px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05); display: flex; justify-content: space-between; align-items: center; gap: 15px; flex-wrap: wrap; opacity: 0.8;">
+                        <div style="flex: 1;">
+                            <strong style="color: #fff; font-size: 15px; display: block; margin-bottom: 5px;">🏢 ${d.razaoSocial}</strong>
+                            <div style="font-size: 12px; color: #94a3b8; font-family: monospace;">${infoExtra}</div>
+                        </div>
+                        <div>
+                            <span style="font-size: 12px; color: #10b981; border: 1px solid rgba(16, 185, 129, 0.4); padding: 5px 10px; border-radius: 6px;">✔️ Abordado</span>
+                        </div>
+                    </div>
+                `;
+            });
+
+            if (contatadosArray.length === 0) {
+                listaContatados.innerHTML = "<p style='color:#94a3b8; font-size:13px;'>Nenhum histórico de contatos recente.</p>";
+            } else if (contatadosArray.length > 10) {
+                listaContatados.innerHTML += `<div style="text-align: center; color: #64748b; font-size: 11px; padding: 5px;">Mostrando os 10 últimos abordados de um total de ${contatadosArray.length}.</div>`;
+            }
+            
+            document.querySelectorAll('.btn-contatar').forEach(btn => {
+                btn.addEventListener('click', async (e) => {
+                    const idDoc = e.target.getAttribute('data-id');
+                    btn.innerHTML = "Salvando...";
+                    await updateDoc(doc(db, "carteira", idDoc), { contatado: true, dataContato: new Date() });
+                });
+            });
+        }
+    }
+    
+    if (filtroQtd) filtroQtd.addEventListener('change', renderizarTelaCarteira);
+    if (filtroGestor) filtroGestor.addEventListener('change', renderizarTelaCarteira);
 }
 
 // AGENDA E LOGS
