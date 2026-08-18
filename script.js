@@ -409,6 +409,27 @@ function carregarAvisos() {
 }
 
 // LÓGICA DO BANCO DE HORAS E FILTRO INTELIGENTE
+// Funções auxiliares para matemática de horas
+function converterHorasParaMinutos(horaStr) {
+    if (!horaStr) return 0;
+    let limpo = horaStr.toString().replace(/\s/g, '').replace('+', '');
+    let eNegativo = limpo.startsWith('-');
+    if (eNegativo) limpo = limpo.substring(1);
+    let partes = limpo.split(':');
+    if (partes.length !== 2) return 0;
+    let minutos = (parseInt(partes[0]) || 0) * 60 + (parseInt(partes[1]) || 0);
+    return eNegativo ? -minutos : minutos;
+}
+
+function converterMinutosParaHoras(totalMinutos) {
+    let sinal = totalMinutos < 0 ? '-' : '+';
+    if (totalMinutos === 0) sinal = '';
+    let absMin = Math.abs(totalMinutos);
+    let horas = Math.floor(absMin / 60);
+    let minutos = absMin % 60;
+    return `${sinal}${String(horas).padStart(2, '0')}:${String(minutos).padStart(2, '0')}`;
+}
+
 function carregarMeuBancoDeHoras() {
     if(!usuarioAtual) return;
     onSnapshot(doc(db, "usuarios", usuarioAtual.email.toLowerCase()), (docSnap) => {
@@ -453,7 +474,6 @@ function carregarVisaoHorasEquipe() {
         let dadosUsuarios = [];
         let supervisoresUnicos = new Set();
 
-        // Coleta os dados de quem tem banco de horas
         snapshot.forEach(docSnap => {
             const dados = docSnap.data();
             if (dados.saldoHoras) {
@@ -462,7 +482,6 @@ function carregarVisaoHorasEquipe() {
             }
         });
 
-        // Monta o menu de filtro com os e-mails dos supervisores ativos
         if (eVisaoGeral && filtroSup) {
             const valorAtual = filtroSup.value;
             let optionsHTML = '<option value="todos">Todos os Colaboradores</option>';
@@ -473,16 +492,18 @@ function carregarVisaoHorasEquipe() {
             filtroSup.value = valorAtual || "todos";
         }
 
-        // Função interna que renderiza a lista baseada no filtro selecionado
         function renderizarLista() {
             listaEquipe.innerHTML = "";
             const filtroSelecionado = (eVisaoGeral && filtroSup) ? filtroSup.value : "todos";
             let exibidos = 0;
+            let totalMinutos = 0;
             
             dadosUsuarios.forEach(dados => {
                 if (filtroSelecionado !== "todos" && dados.supervisor !== filtroSelecionado) return;
                 
                 exibidos++;
+                totalMinutos += converterHorasParaMinutos(dados.saldoHoras);
+                
                 const corSaldo = dados.saldoHoras.includes('-') ? '#f87171' : '#4ade80';
                 
                 let dataTexto = "";
@@ -509,7 +530,26 @@ function carregarVisaoHorasEquipe() {
 
             if (dadosUsuarios.length > 0) {
                 visaoSupervisor.classList.remove('hidden');
-                if (exibidos === 0) listaEquipe.innerHTML = "<p style='color:#94a3b8; font-size:13px;'>Nenhum colaborador encontrado neste filtro.</p>";
+                
+                // NOVO: Renderiza o Card de Totalizador
+                if (exibidos > 0) {
+                    const stringTotal = converterMinutosParaHoras(totalMinutos);
+                    const corTotal = totalMinutos < 0 ? '#f87171' : (totalMinutos > 0 ? '#4ade80' : '#fff');
+                    
+                    listaEquipe.innerHTML += `
+                        <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.05); padding: 15px; border-radius: 8px; border: 1px dashed rgba(255,255,255,0.2); margin-top: 10px;">
+                            <div>
+                                <strong style="color: #fff; font-size: 15px;">📊 SALDO TOTAL</strong>
+                                <div style="font-size: 11px; color: #94a3b8;">Soma das horas exibidas acima</div>
+                            </div>
+                            <div style="font-size: 20px; font-weight: bold; color: ${corTotal};">
+                                ${stringTotal}
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    listaEquipe.innerHTML = "<p style='color:#94a3b8; font-size:13px;'>Nenhum colaborador encontrado neste filtro.</p>";
+                }
             } else {
                 visaoSupervisor.classList.add('hidden');
             }
