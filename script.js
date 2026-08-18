@@ -1,6 +1,6 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getAuth, signInWithPopup, signInWithRedirect, getRedirectResult, GoogleAuthProvider, signOut, onAuthStateChanged, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, deleteDoc, doc, setDoc, getDoc, updateDoc, arrayUnion, arrayRemove, limit, where } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, deleteDoc, doc, setDoc, getDoc, updateDoc, arrayUnion, arrayRemove, limit, where, writeBatch } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-analytics.js";
 
 const firebaseConfig = {
@@ -47,6 +47,7 @@ const userGreeting = document.getElementById('user-greeting');
 
 const tabMural = document.getElementById('tab-mural');
 const tabMetas = document.getElementById('tab-metas');
+const tabCarteira = document.getElementById('tab-carteira');
 const tabApps = document.getElementById('tab-apps');
 const tabAgenda = document.getElementById('tab-agenda');
 const tabEquipe = document.getElementById('tab-equipe');
@@ -55,6 +56,7 @@ const tabAdm = document.getElementById('tab-adm');
 
 const muralContainer = document.getElementById('mural-container');
 const metasContainer = document.getElementById('metas-container');
+const carteiraContainer = document.getElementById('carteira-container');
 const appsContainer = document.getElementById('apps-container');
 const agendaContainer = document.getElementById('agenda-container');
 const equipeContainer = document.getElementById('equipe-container');
@@ -77,6 +79,7 @@ const vipForm = document.getElementById('vip-form');
 const uploadHorasForm = document.getElementById('upload-horas-form');
 const meuSaldoHoras = document.getElementById('meu-saldo-horas');
 const dataAtualizacaoHoras = document.getElementById('data-atualizacao-horas');
+const uploadCarteiraForm = document.getElementById('upload-carteira-form');
 
 const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 
@@ -147,6 +150,7 @@ async function exibirDashboard() {
     carregarAgendamentos();
     carregarMeuBancoDeHoras();
     carregarVisaoHorasEquipe();
+    carregarCarteira();
 }
 
 loginBtn.addEventListener('click', () => {
@@ -166,11 +170,11 @@ function ocultarVisualizador() {
 }
 
 // NAVEGAÇÃO
-[tabMural, tabMetas, tabApps, tabAgenda, tabEquipe, tabHoras, tabAdm].forEach((btn, index) => {
-    const containers = [muralContainer, metasContainer, appsContainer, agendaContainer, equipeContainer, horasContainer, admContainer];
+[tabMural, tabMetas, tabCarteira, tabApps, tabAgenda, tabEquipe, tabHoras, tabAdm].forEach((btn, index) => {
+    const containers = [muralContainer, metasContainer, carteiraContainer, appsContainer, agendaContainer, equipeContainer, horasContainer, admContainer];
     btn.addEventListener('click', () => {
         ocultarVisualizador();
-        [tabMural, tabMetas, tabApps, tabAgenda, tabEquipe, tabHoras, tabAdm].forEach(b => b.classList.remove('primary'));
+        [tabMural, tabMetas, tabCarteira, tabApps, tabAgenda, tabEquipe, tabHoras, tabAdm].forEach(b => b.classList.remove('primary'));
         containers.forEach(c => c.classList.add('hidden'));
         btn.classList.add('primary'); containers[index].classList.remove('hidden');
     });
@@ -409,7 +413,6 @@ function carregarAvisos() {
 }
 
 // LÓGICA DO BANCO DE HORAS E FILTRO INTELIGENTE
-// Funções auxiliares para matemática de horas
 function converterHorasParaMinutos(horaStr) {
     if (!horaStr) return 0;
     let limpo = horaStr.toString().replace(/\s/g, '').replace('+', '');
@@ -531,7 +534,6 @@ function carregarVisaoHorasEquipe() {
             if (dadosUsuarios.length > 0) {
                 visaoSupervisor.classList.remove('hidden');
                 
-                // NOVO: Renderiza o Card de Totalizador
                 if (exibidos > 0) {
                     const stringTotal = converterMinutosParaHoras(totalMinutos);
                     const corTotal = totalMinutos < 0 ? '#f87171' : (totalMinutos > 0 ? '#4ade80' : '#fff');
@@ -605,6 +607,186 @@ if (uploadHorasForm) {
         };
         
         reader.readAsText(file);
+    });
+}
+
+// LOGICA DE CARTEIRA / CRM (UPLOAD EM LOTES E VISUALIZAÇÃO)
+if (uploadCarteiraForm) {
+    uploadCarteiraForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const file = document.getElementById('arquivo-csv-carteira').files[0];
+        if (!file) return;
+
+        const btnSub = e.target.querySelector('button');
+        btnSub.innerText = "Processando Lotes (Aguarde)...";
+
+        const reader = new FileReader();
+        reader.onload = async (evento) => {
+            const texto = evento.target.result;
+            const linhas = texto.split('\n');
+            
+            let batches = [];
+            let currentBatch = writeBatch(db);
+            let countInBatch = 0;
+            let totalCount = 0;
+
+            for (let i = 1; i < linhas.length; i++) { 
+                const linha = linhas[i].trim();
+                if (!linha) continue;
+
+                const colunas = linha.includes(';') ? linha.split(';') : linha.split(','); 
+                
+                if (colunas.length >= 3) {
+                    const email = colunas[0].trim().toLowerCase();
+                    const cnpjOriginal = colunas[1].trim();
+                    const cnpjLimpo = cnpjOriginal.replace(/\D/g, ''); // Remove barras, traços para criar um ID seguro
+                    const razaoSocial = colunas[2] ? colunas[2].trim() : "";
+                    const movel = colunas[3] ? colunas[3].trim() : "";
+                    const fixa = colunas[4] ? colunas[4].trim() : "";
+                    const aparelho = colunas[5] ? colunas[5].trim() : "";
+
+                    if (email && cnpjLimpo) {
+                        const docId = `${email}_${cnpjLimpo}`;
+                        
+                        currentBatch.set(doc(db, "carteira", docId), {
+                            emailVendedor: email,
+                            cnpj: cnpjOriginal,
+                            razaoSocial: razaoSocial,
+                            movel: movel,
+                            fixa: fixa,
+                            aparelho: aparelho,
+                            contatado: false,
+                            atualizadoEm: new Date()
+                        }, { merge: true });
+                        
+                        countInBatch++;
+                        totalCount++;
+
+                        if (countInBatch === 450) { // O limite do Firebase é 500 operações por Lote
+                            batches.push(currentBatch.commit());
+                            currentBatch = writeBatch(db);
+                            countInBatch = 0;
+                        }
+                    }
+                }
+            }
+            
+            if (countInBatch > 0) {
+                batches.push(currentBatch.commit());
+            }
+
+            try {
+                await Promise.all(batches);
+                alert(`✅ Upload da Carteira concluído!\nForam atualizados ${totalCount} clientes de forma segura.`);
+            } catch (err) {
+                console.error("Erro no batch:", err);
+                alert("Ocorreu um erro ao processar uma parte da carteira.");
+            }
+            
+            uploadCarteiraForm.reset();
+            btnSub.innerText = "Processar Carteira (Lote)";
+        };
+        
+        reader.readAsText(file);
+    });
+}
+
+function carregarCarteira() {
+    if (!usuarioAtual) return;
+    
+    const listaPendentes = document.getElementById('lista-oportunidades-pendentes');
+    const listaContatados = document.getElementById('lista-oportunidades-contatadas');
+    const visaoGestao = document.getElementById('visao-gestao-carteira');
+    const listaGestao = document.getElementById('lista-gestao-carteira');
+    
+    let eVisaoGeral = (perfilAtual === 'rh' || perfilAtual === 'gerencia' || eAdminRoot);
+    
+    // VISÃO DE GESTÃO (Contador Geral)
+    if (eVisaoGeral) {
+        visaoGestao.classList.remove('hidden');
+        onSnapshot(collection(db, "carteira"), (snapshot) => {
+            let stats = {};
+            snapshot.forEach(docSnap => {
+                const d = docSnap.data();
+                if (!stats[d.emailVendedor]) stats[d.emailVendedor] = { total: 0, contatados: 0 };
+                stats[d.emailVendedor].total++;
+                if (d.contatado) stats[d.emailVendedor].contatados++;
+            });
+            
+            listaGestao.innerHTML = "";
+            let temAlguem = false;
+            
+            for (let email in stats) {
+                temAlguem = true;
+                const s = stats[email];
+                const pct = s.total > 0 ? Math.round((s.contatados / s.total) * 100) : 0;
+                
+                listaGestao.innerHTML += `
+                    <div style="background: rgba(0,0,0,0.4); padding: 15px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
+                        <strong style="color: #a855f7; font-size: 14px;">👤 ${email}</strong>
+                        <div style="display: flex; justify-content: space-between; margin-top: 10px; font-size: 13px; color: #cbd5e1;">
+                            <span>Total Leads: ${s.total}</span>
+                            <span style="color: #10b981;">Abordados: ${s.contatados} (${pct}%)</span>
+                        </div>
+                        <div style="background: rgba(255,255,255,0.1); height: 8px; border-radius: 4px; margin-top: 8px; overflow: hidden;">
+                            <div style="background: #10b981; height: 100%; width: ${pct}%; transition: width 0.5s ease;"></div>
+                        </div>
+                    </div>
+                `;
+            }
+            if(!temAlguem) listaGestao.innerHTML = "<p style='color:#94a3b8; font-size:13px;'>Nenhuma carteira carregada no sistema.</p>";
+        });
+    }
+
+    // VISÃO DO VENDEDOR (Cards Interativos)
+    const qVendedor = query(collection(db, "carteira"), where("emailVendedor", "==", usuarioAtual.email.toLowerCase()));
+    onSnapshot(qVendedor, (snapshot) => {
+        listaPendentes.innerHTML = "";
+        listaContatados.innerHTML = "";
+        
+        snapshot.forEach(docSnap => {
+            const d = docSnap.data();
+            let tags = '';
+            
+            if (d.movel) tags += `<span style="background: rgba(59,130,246,0.2); color: #60a5fa; padding: 3px 8px; border-radius: 4px; font-size: 11px;">📱 Móvel: ${d.movel}</span>`;
+            if (d.fixa) tags += `<span style="background: rgba(234,179,8,0.2); color: #facc15; padding: 3px 8px; border-radius: 4px; font-size: 11px;">☎️ Fixa: ${d.fixa}</span>`;
+            if (d.aparelho) tags += `<span style="background: rgba(236,72,153,0.2); color: #f472b6; padding: 3px 8px; border-radius: 4px; font-size: 11px;">📲 Aparelho: ${d.aparelho}</span>`;
+            
+            const btnAcao = !d.contatado 
+                ? `<button class="glass-button small btn-contatar" data-id="${docSnap.id}" style="background: rgba(16, 185, 129, 0.2); color: #10b981; border-color: rgba(16, 185, 129, 0.4); white-space: nowrap;">✅ Já Contatei</button>` 
+                : `<span style="font-size: 12px; color: #10b981; border: 1px solid rgba(16, 185, 129, 0.4); padding: 5px 10px; border-radius: 6px;">✔️ Abordado</span>`;
+            
+            const card = `
+                <div style="background: rgba(0,0,0,0.4); padding: 15px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05); display: flex; justify-content: space-between; align-items: center; gap: 15px; flex-wrap: wrap;">
+                    <div style="flex: 1;">
+                        <strong style="color: #fff; font-size: 15px; display: block; margin-bottom: 5px;">🏢 ${d.razaoSocial}</strong>
+                        <div style="font-size: 12px; color: #94a3b8; margin-bottom: 10px; font-family: monospace;">CNPJ: ${d.cnpj}</div>
+                        <div style="display: flex; gap: 8px; flex-wrap: wrap;">${tags}</div>
+                    </div>
+                    <div>
+                        ${btnAcao}
+                    </div>
+                </div>
+            `;
+            
+            if (d.contatado) {
+                listaContatados.innerHTML += card;
+            } else {
+                listaPendentes.innerHTML += card;
+            }
+        });
+        
+        if (listaPendentes.innerHTML === "") listaPendentes.innerHTML = "<p style='color:#94a3b8; font-size:13px; text-align: center; padding: 15px;'>🎉 Você não tem oportunidades pendentes na sua carteira.</p>";
+        if (listaContatados.innerHTML === "") listaContatados.innerHTML = "<p style='color:#94a3b8; font-size:13px;'>Nenhum histórico de contatos recente.</p>";
+        
+        // Listener para marcar como contatado
+        document.querySelectorAll('.btn-contatar').forEach(btn => {
+            btn.addEventListener('click', async (e) => {
+                const idDoc = e.target.getAttribute('data-id');
+                btn.innerHTML = "Salvando...";
+                await updateDoc(doc(db, "carteira", idDoc), { contatado: true, dataContato: new Date() });
+            });
+        });
     });
 }
 
