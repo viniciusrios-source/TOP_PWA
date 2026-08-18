@@ -210,7 +210,6 @@ closeViewerBtn.addEventListener('click', () => {
     appsContainer.classList.remove('hidden'); 
 });
 
-
 // METAS E VISÃO DA EQUIPE
 function atualizarBarraUI(nome, feito, meta) {
     const m = meta || 0; const f = feito || 0;
@@ -409,7 +408,7 @@ function carregarAvisos() {
     });
 }
 
-// LÓGICA DO BANCO DE HORAS
+// LÓGICA DO BANCO DE HORAS E FILTRO INTELIGENTE
 function carregarMeuBancoDeHoras() {
     if(!usuarioAtual) return;
     onSnapshot(doc(db, "usuarios", usuarioAtual.email.toLowerCase()), (docSnap) => {
@@ -433,26 +432,57 @@ function carregarVisaoHorasEquipe() {
     if (!usuarioAtual) return;
     
     const visaoSupervisor = document.getElementById('visao-supervisor-horas');
+    const tituloVisao = document.getElementById('titulo-visao-horas');
     const listaEquipe = document.getElementById('lista-equipe-horas');
+    const filtroSup = document.getElementById('filtro-supervisor-horas');
     
-    let consultaBase;
-    
-    if (perfilAtual === 'rh' || perfilAtual === 'gerencia' || eAdminRoot) {
-        consultaBase = query(collection(db, "usuarios"));
-        visaoSupervisor.querySelector('h3').innerText = "🏢 Visão Geral (Empresa)";
+    let eVisaoGeral = (perfilAtual === 'rh' || perfilAtual === 'gerencia' || eAdminRoot);
+    let consultaBase = eVisaoGeral 
+        ? query(collection(db, "usuarios")) 
+        : query(collection(db, "usuarios"), where("supervisor", "==", usuarioAtual.email.toLowerCase()));
+
+    if (eVisaoGeral) {
+        tituloVisao.innerText = "🏢 Visão Geral (Empresa)";
+        if(filtroSup) filtroSup.classList.remove('hidden');
     } else {
-        consultaBase = query(collection(db, "usuarios"), where("supervisor", "==", usuarioAtual.email.toLowerCase()));
-        visaoSupervisor.querySelector('h3').innerText = "👥 Horas da Minha Equipe";
+        tituloVisao.innerText = "👥 Horas da Minha Equipe";
+        if(filtroSup) filtroSup.classList.add('hidden');
     }
 
     onSnapshot(consultaBase, (snapshot) => {
-        listaEquipe.innerHTML = "";
-        let temGenteNaEquipe = false;
+        let dadosUsuarios = [];
+        let supervisoresUnicos = new Set();
 
+        // Coleta os dados de quem tem banco de horas
         snapshot.forEach(docSnap => {
             const dados = docSnap.data();
             if (dados.saldoHoras) {
-                temGenteNaEquipe = true;
+                dadosUsuarios.push({ id: docSnap.id, ...dados });
+                if (dados.supervisor) supervisoresUnicos.add(dados.supervisor);
+            }
+        });
+
+        // Monta o menu de filtro com os e-mails dos supervisores ativos
+        if (eVisaoGeral && filtroSup) {
+            const valorAtual = filtroSup.value;
+            let optionsHTML = '<option value="todos">Todos os Colaboradores</option>';
+            supervisoresUnicos.forEach(supEmail => {
+                optionsHTML += `<option value="${supEmail}">Equipe: ${supEmail}</option>`;
+            });
+            filtroSup.innerHTML = optionsHTML;
+            filtroSup.value = valorAtual || "todos";
+        }
+
+        // Função interna que renderiza a lista baseada no filtro selecionado
+        function renderizarLista() {
+            listaEquipe.innerHTML = "";
+            const filtroSelecionado = (eVisaoGeral && filtroSup) ? filtroSup.value : "todos";
+            let exibidos = 0;
+            
+            dadosUsuarios.forEach(dados => {
+                if (filtroSelecionado !== "todos" && dados.supervisor !== filtroSelecionado) return;
+                
+                exibidos++;
                 const corSaldo = dados.saldoHoras.includes('-') ? '#f87171' : '#4ade80';
                 
                 let dataTexto = "";
@@ -461,11 +491,13 @@ function carregarVisaoHorasEquipe() {
                     dataTexto = `Atualizado: ${dataObj.toLocaleDateString('pt-BR')} às ${dataObj.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}`;
                 }
                 
+                let badgeSupervisor = (eVisaoGeral && dados.supervisor) ? ` | 🧑‍💼 Equipe: ${dados.supervisor}` : '';
+                
                 listaEquipe.innerHTML += `
                     <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.4); padding: 15px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
                         <div>
                             <strong style="color: #00d2ff; font-size: 14px;">👤 ${dados.nome}</strong>
-                            <div style="font-size: 11px; color: #94a3b8;">${docSnap.id}</div>
+                            <div style="font-size: 11px; color: #94a3b8;">${dados.id}${badgeSupervisor}</div>
                             <div style="font-size: 10px; color: #64748b; margin-top: 4px;">${dataTexto}</div>
                         </div>
                         <div style="font-size: 18px; font-weight: bold; color: ${corSaldo};">
@@ -473,13 +505,20 @@ function carregarVisaoHorasEquipe() {
                         </div>
                     </div>
                 `;
-            }
-        });
+            });
 
-        if (temGenteNaEquipe) {
-            visaoSupervisor.classList.remove('hidden');
-        } else {
-            visaoSupervisor.classList.add('hidden');
+            if (dadosUsuarios.length > 0) {
+                visaoSupervisor.classList.remove('hidden');
+                if (exibidos === 0) listaEquipe.innerHTML = "<p style='color:#94a3b8; font-size:13px;'>Nenhum colaborador encontrado neste filtro.</p>";
+            } else {
+                visaoSupervisor.classList.add('hidden');
+            }
+        }
+
+        renderizarLista();
+        
+        if (eVisaoGeral && filtroSup) {
+            filtroSup.onchange = renderizarLista;
         }
     });
 }
