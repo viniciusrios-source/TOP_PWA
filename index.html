@@ -62,10 +62,11 @@
             <button id="tab-apps" class="glass-button">🚀 Links Rápidos</button>
             <button id="tab-agenda" class="glass-button">📅 Agenda</button>
             <button id="tab-equipe" class="glass-button hidden" style="background: rgba(168, 85, 247, 0.2); border-color: rgba(168, 85, 247, 0.4);">📈 Visão da Equipe</button>
+            <button id="tab-horas" class="glass-button">⏰ Banco de Horas</button>
             <button id="tab-adm" class="glass-button hidden" style="background: rgba(234, 179, 8, 0.2); border-color: rgba(234, 179, 8, 0.4);">👑 Painel ADM</button>
         </div>
 
-        <!-- VISUALIZADOR DE SISTEMAS INTERNO (NOVO) -->
+        <!-- VISUALIZADOR DE SISTEMAS INTERNO -->
         <div id="viewer-container" class="hidden glass-card" style="padding: 10px; height: 80vh; display: flex; flex-direction: column; margin-bottom: 20px;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; padding: 5px;">
                 <h3 id="viewer-title" style="color: #00d2ff; font-size: 16px;">Carregando Sistema...</h3>
@@ -80,7 +81,7 @@
             <div id="lista-avisos" style="display: flex; flex-direction: column; gap: 15px;"></div>
         </div>
 
-        <!-- ABA 2: MINHAS METAS (VISÃO DO VENDEDOR) -->
+        <!-- ABA 2: MINHAS METAS -->
         <div id="metas-container" class="hidden">
             <div class="glass-card" style="padding: 25px; margin-bottom: 25px;">
                 <h3 style="margin-bottom: 20px; color: #e100ff;">Meu Compromisso Mensal</h3>
@@ -143,6 +144,24 @@
             </div>
         </div>
 
+        <!-- ABA 7: BANCO DE HORAS -->
+        <div id="horas-container" class="hidden">
+            <div class="glass-card" style="padding: 25px; margin-bottom: 25px;">
+                <h3 style="margin-bottom: 15px; color: #00d2ff;">⏰ Meu Banco de Horas</h3>
+                <p style="font-size: 14px; color: #cbd5e1; margin-bottom: 20px;">Confira o seu saldo atualizado pelo RH.</p>
+                <div style="background: rgba(0,0,0,0.4); padding: 20px; border-radius: 10px; text-align: center; border: 1px solid rgba(255,255,255,0.1);">
+                    <span style="font-size: 14px; color: #94a3b8;">Saldo Atual:</span>
+                    <h2 id="meu-saldo-horas" style="font-size: 36px; margin-top: 10px; color: #fff;">--:--</h2>
+                    <p id="data-atualizacao-horas" style="font-size: 11px; color: #64748b; margin-top: 8px;">Atualizado em: --</p>
+                </div>
+            </div>
+            
+            <div id="visao-supervisor-horas" class="hidden glass-card" style="padding: 25px;">
+                <h3 style="margin-bottom: 15px; color: #a855f7;">👥 Horas da Minha Equipe</h3>
+                <div id="lista-equipe-horas" style="display: flex; flex-direction: column; gap: 10px;"></div>
+            </div>
+        </div>
+
         <!-- ABA 6: PAINEL ADM (VISÃO DO GESTOR/TI) -->
         <div id="adm-container" class="hidden">
             
@@ -176,17 +195,39 @@
                 </form>
             </div>
 
+            <!-- UPLOAD DE HORAS (RH) -->
+            <div class="glass-card" style="padding: 25px; margin-bottom: 25px; border-color: rgba(59, 130, 246, 0.4);">
+                <h3 style="margin-bottom: 15px; color: #3b82f6;">📁 Upload: Banco de Horas</h3>
+                <p style="font-size: 13px; color: #94a3b8; margin-bottom: 15px;">Suba uma planilha .CSV (separada por vírgulas) com 2 colunas: E-mail e Saldo.</p>
+                <form id="upload-horas-form">
+                    <input type="file" id="arquivo-csv" accept=".csv" class="input-dark" required style="margin-bottom: 15px;">
+                    <button type="submit" class="glass-button" style="background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); width: 100%;">Processar Planilha de Horas</button>
+                </form>
+            </div>
+
             <div class="glass-card" style="padding: 25px; margin-bottom: 25px;">
                 <h3 style="margin-bottom: 15px;">⚙️ Gerenciar Acessos e Perfis</h3>
                 <form id="permissoes-form">
                     <select id="user-email-perm" class="input-dark" required style="margin-bottom: 15px;"><option value="">Carregando usuários...</option></select>
-                    <label style="font-size: 12px; color: #94a3b8;">Perfil de Acesso (Auto-preenche as caixas):</label>
-                    <select id="user-perfil" class="input-dark" required style="margin-bottom: 15px;">
-                        <option value="vendas">Vendas (Padrão)</option>
-                        <option value="ti">T.I</option>
-                        <option value="rh">RH</option>
-                        <option value="gerencia">Gerência</option>
-                    </select>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+                        <div>
+                            <label style="font-size: 12px; color: #94a3b8;">Perfil de Acesso:</label>
+                            <select id="user-perfil" class="input-dark" required>
+                                <option value="vendas">Vendas (Padrão)</option>
+                                <option value="ti">T.I</option>
+                                <option value="rh">RH</option>
+                                <option value="gerencia">Gerência</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label style="font-size: 12px; color: #94a3b8;">Supervisor Responsável:</label>
+                            <select id="user-supervisor" class="input-dark">
+                                <option value="">Nenhum / Gestão Direta</option>
+                            </select>
+                        </div>
+                    </div>
+
                     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; margin-bottom: 20px;">
                         <label><input type="checkbox" class="card-check" value="crm"> CRM</label>
                         <label><input type="checkbox" class="card-check" value="mapa-nexus"> MAPA NEXUS</label>
