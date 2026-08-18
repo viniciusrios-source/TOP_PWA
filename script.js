@@ -1,7 +1,6 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getAuth, signInWithPopup, signInWithRedirect, getRedirectResult, GoogleAuthProvider, signOut, onAuthStateChanged, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, deleteDoc, doc, setDoc, getDoc, updateDoc, arrayUnion, arrayRemove, limit } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-// NOVO: Importando o Google Analytics
+import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, deleteDoc, doc, setDoc, getDoc, updateDoc, arrayUnion, arrayRemove, limit, where } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-analytics.js";
 
 const firebaseConfig = {
@@ -17,7 +16,6 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
-// NOVO: Iniciando o Google Analytics
 const analytics = getAnalytics(app);
 
 const provider = new GoogleAuthProvider();
@@ -52,6 +50,7 @@ const tabMetas = document.getElementById('tab-metas');
 const tabApps = document.getElementById('tab-apps');
 const tabAgenda = document.getElementById('tab-agenda');
 const tabEquipe = document.getElementById('tab-equipe');
+const tabHoras = document.getElementById('tab-horas');
 const tabAdm = document.getElementById('tab-adm');
 
 const muralContainer = document.getElementById('mural-container');
@@ -59,6 +58,7 @@ const metasContainer = document.getElementById('metas-container');
 const appsContainer = document.getElementById('apps-container');
 const agendaContainer = document.getElementById('agenda-container');
 const equipeContainer = document.getElementById('equipe-container');
+const horasContainer = document.getElementById('horas-container');
 const admContainer = document.getElementById('adm-container');
 
 const viewerContainer = document.getElementById('viewer-container');
@@ -73,6 +73,10 @@ const btnSalvarMetas = document.getElementById('btn-salvar-metas');
 const metaAdmForm = document.getElementById('meta-adm-form');
 const listaEquipeMetas = document.getElementById('lista-equipe-metas');
 const vipForm = document.getElementById('vip-form');
+
+const uploadHorasForm = document.getElementById('upload-horas-form');
+const meuSaldoHoras = document.getElementById('meu-saldo-horas');
+const dataAtualizacaoHoras = document.getElementById('data-atualizacao-horas');
 
 const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 
@@ -141,6 +145,8 @@ async function exibirDashboard() {
     carregarAvisos();
     carregarMetasUsuario();
     carregarAgendamentos();
+    carregarMeuBancoDeHoras();
+    carregarVisaoHorasEquipe();
 }
 
 loginBtn.addEventListener('click', () => {
@@ -160,11 +166,11 @@ function ocultarVisualizador() {
 }
 
 // NAVEGAÇÃO
-[tabMural, tabMetas, tabApps, tabAgenda, tabEquipe, tabAdm].forEach((btn, index) => {
-    const containers = [muralContainer, metasContainer, appsContainer, agendaContainer, equipeContainer, admContainer];
+[tabMural, tabMetas, tabApps, tabAgenda, tabEquipe, tabHoras, tabAdm].forEach((btn, index) => {
+    const containers = [muralContainer, metasContainer, appsContainer, agendaContainer, equipeContainer, horasContainer, admContainer];
     btn.addEventListener('click', () => {
         ocultarVisualizador();
-        [tabMural, tabMetas, tabApps, tabAgenda, tabEquipe, tabAdm].forEach(b => b.classList.remove('primary'));
+        [tabMural, tabMetas, tabApps, tabAgenda, tabEquipe, tabHoras, tabAdm].forEach(b => b.classList.remove('primary'));
         containers.forEach(c => c.classList.add('hidden'));
         btn.classList.add('primary'); containers[index].classList.remove('hidden');
     });
@@ -274,9 +280,14 @@ function carregarVisaoGeralMetas() {
 function carregarListaUsuarios() {
     onSnapshot(collection(db, "usuarios"), (snapshot) => {
         let opt = '<option value="">Selecione o usuário...</option>';
-        snapshot.forEach(docSnap => { opt += `<option value="${docSnap.id}">${docSnap.data().nome} (${docSnap.id})</option>`; });
+        let optSup = '<option value="">Nenhum / Gestão Direta</option>';
+        snapshot.forEach(docSnap => { 
+            opt += `<option value="${docSnap.id}">${docSnap.data().nome} (${docSnap.id})</option>`; 
+            optSup += `<option value="${docSnap.id}">${docSnap.data().nome}</option>`; 
+        });
         document.getElementById('meta-email').innerHTML = opt;
         document.getElementById('user-email-perm').innerHTML = opt;
+        document.getElementById('user-supervisor').innerHTML = optSup;
     });
 }
 
@@ -290,8 +301,12 @@ document.getElementById('permissoes-form').addEventListener('submit', async (e) 
     const emailT = document.getElementById('user-email-perm').value;
     if(!emailT) return alert("Selecione um usuário!");
     try {
-        await setDoc(doc(db, "usuarios", emailT), { perfil: document.getElementById('user-perfil').value, cardsPermitidos: Array.from(document.querySelectorAll('.card-check:checked')).map(cb => cb.value) }, { merge: true });
-        alert(`Acessos salvos!`); e.target.reset();
+        await setDoc(doc(db, "usuarios", emailT), { 
+            perfil: document.getElementById('user-perfil').value, 
+            supervisor: document.getElementById('user-supervisor').value,
+            cardsPermitidos: Array.from(document.querySelectorAll('.card-check:checked')).map(cb => cb.value) 
+        }, { merge: true });
+        alert(`Acessos e hierarquia salvos para ${emailT}!`); e.target.reset();
     } catch (err) {}
 });
 
@@ -391,6 +406,126 @@ function carregarAvisos() {
                 }
             });
         });
+    });
+}
+
+// LÓGICA DO BANCO DE HORAS
+function carregarMeuBancoDeHoras() {
+    if(!usuarioAtual) return;
+    onSnapshot(doc(db, "usuarios", usuarioAtual.email.toLowerCase()), (docSnap) => {
+        if (docSnap.exists() && docSnap.data().saldoHoras) {
+            const dados = docSnap.data();
+            let saldo = dados.saldoHoras;
+            meuSaldoHoras.innerText = saldo;
+            meuSaldoHoras.style.color = saldo.includes('-') ? '#f87171' : '#4ade80';
+            
+            if (dados.dataAtualizacaoHoras && dataAtualizacaoHoras) {
+                const dataObj = dados.dataAtualizacaoHoras.toDate();
+                const dataFormatada = dataObj.toLocaleDateString('pt-BR');
+                const horaFormatada = dataObj.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+                dataAtualizacaoHoras.innerText = `Atualizado em: ${dataFormatada} às ${horaFormatada}`;
+            }
+        }
+    });
+}
+
+function carregarVisaoHorasEquipe() {
+    if (!usuarioAtual) return;
+    
+    const visaoSupervisor = document.getElementById('visao-supervisor-horas');
+    const listaEquipe = document.getElementById('lista-equipe-horas');
+    
+    let consultaBase;
+    
+    if (perfilAtual === 'rh' || perfilAtual === 'gerencia' || eAdminRoot) {
+        consultaBase = query(collection(db, "usuarios"));
+        visaoSupervisor.querySelector('h3').innerText = "🏢 Visão Geral (Empresa)";
+    } else {
+        consultaBase = query(collection(db, "usuarios"), where("supervisor", "==", usuarioAtual.email.toLowerCase()));
+        visaoSupervisor.querySelector('h3').innerText = "👥 Horas da Minha Equipe";
+    }
+
+    onSnapshot(consultaBase, (snapshot) => {
+        listaEquipe.innerHTML = "";
+        let temGenteNaEquipe = false;
+
+        snapshot.forEach(docSnap => {
+            const dados = docSnap.data();
+            if (dados.saldoHoras) {
+                temGenteNaEquipe = true;
+                const corSaldo = dados.saldoHoras.includes('-') ? '#f87171' : '#4ade80';
+                
+                let dataTexto = "";
+                if (dados.dataAtualizacaoHoras) {
+                    const dataObj = dados.dataAtualizacaoHoras.toDate();
+                    dataTexto = `Atualizado: ${dataObj.toLocaleDateString('pt-BR')} às ${dataObj.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}`;
+                }
+                
+                listaEquipe.innerHTML += `
+                    <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.4); padding: 15px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
+                        <div>
+                            <strong style="color: #00d2ff; font-size: 14px;">👤 ${dados.nome}</strong>
+                            <div style="font-size: 11px; color: #94a3b8;">${docSnap.id}</div>
+                            <div style="font-size: 10px; color: #64748b; margin-top: 4px;">${dataTexto}</div>
+                        </div>
+                        <div style="font-size: 18px; font-weight: bold; color: ${corSaldo};">
+                            ${dados.saldoHoras}
+                        </div>
+                    </div>
+                `;
+            }
+        });
+
+        if (temGenteNaEquipe) {
+            visaoSupervisor.classList.remove('hidden');
+        } else {
+            visaoSupervisor.classList.add('hidden');
+        }
+    });
+}
+
+if (uploadHorasForm) {
+    uploadHorasForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const file = document.getElementById('arquivo-csv').files[0];
+        if (!file) return;
+
+        const btnSub = uploadHorasForm.querySelector('button');
+        btnSub.innerText = "Processando...";
+
+        const reader = new FileReader();
+        reader.onload = async (evento) => {
+            const texto = evento.target.result;
+            const linhas = texto.split('\n');
+            let count = 0;
+
+            for (let i = 1; i < linhas.length; i++) { 
+                const linha = linhas[i].trim();
+                if (!linha) continue;
+
+                const colunas = linha.includes(';') ? linha.split(';') : linha.split(','); 
+                
+                if (colunas.length >= 2) {
+                    const emailCol = colunas[0].trim().toLowerCase();
+                    const saldoCol = colunas[1].trim();
+
+                    try {
+                        await setDoc(doc(db, "usuarios", emailCol), {
+                            saldoHoras: saldoCol,
+                            dataAtualizacaoHoras: new Date()
+                        }, { merge: true });
+                        count++;
+                    } catch (err) { 
+                        console.error("Erro ao salvar horas para:", emailCol); 
+                    }
+                }
+            }
+            alert(`✅ Upload concluído com sucesso!\nSaldo atualizado para ${count} funcionários.`);
+            uploadHorasForm.reset();
+            btnSub.innerText = "Processar Planilha de Horas";
+        };
+        
+        reader.readAsText(file);
     });
 }
 
