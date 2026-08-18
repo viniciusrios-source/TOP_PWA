@@ -611,6 +611,19 @@ if (uploadHorasForm) {
 }
 
 // LOGICA DE CARTEIRA / CRM (UPLOAD EM LOTES E VISUALIZAÇÃO)
+
+function calcularMeses(dataStr) {
+    if (!dataStr || !dataStr.includes('/')) return null;
+    const partes = dataStr.split('/');
+    if (partes.length !== 3) return null;
+    const dataVenda = new Date(partes[2], partes[1] - 1, partes[0]);
+    const hoje = new Date();
+    let diffMeses = (hoje.getFullYear() - dataVenda.getFullYear()) * 12;
+    diffMeses -= dataVenda.getMonth();
+    diffMeses += hoje.getMonth();
+    return diffMeses > 0 ? diffMeses : 0;
+}
+
 if (uploadCarteiraForm) {
     uploadCarteiraForm.addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -636,22 +649,25 @@ if (uploadCarteiraForm) {
 
                 const colunas = linha.includes(';') ? linha.split(';') : linha.split(','); 
                 
-                if (colunas.length >= 3) {
+                if (colunas.length >= 4) {
                     const email = colunas[0].trim().toLowerCase();
                     const cnpjOriginal = colunas[1].trim();
-                    const cnpjLimpo = cnpjOriginal.replace(/\D/g, ''); // Remove barras, traços para criar um ID seguro
+                    const cnpjLimpo = cnpjOriginal.replace(/\D/g, ''); 
                     const razaoSocial = colunas[2] ? colunas[2].trim() : "";
-                    const movel = colunas[3] ? colunas[3].trim() : "";
-                    const fixa = colunas[4] ? colunas[4].trim() : "";
-                    const aparelho = colunas[5] ? colunas[5].trim() : "";
+                    const dataVenda = colunas[3] ? colunas[3].trim() : "";
+                    const movel = colunas[4] ? colunas[4].trim() : "";
+                    const fixa = colunas[5] ? colunas[5].trim() : "";
+                    const aparelho = colunas[6] ? colunas[6].trim() : "";
 
                     if (email && cnpjLimpo) {
-                        const docId = `${email}_${cnpjLimpo}`;
+                        const dataLimpa = dataVenda ? dataVenda.replace(/\D/g, '') : Math.floor(Math.random() * 10000);
+                        const docId = `${email}_${cnpjLimpo}_${dataLimpa}`;
                         
                         currentBatch.set(doc(db, "carteira", docId), {
                             emailVendedor: email,
                             cnpj: cnpjOriginal,
                             razaoSocial: razaoSocial,
+                            dataVenda: dataVenda,
                             movel: movel,
                             fixa: fixa,
                             aparelho: aparelho,
@@ -662,7 +678,7 @@ if (uploadCarteiraForm) {
                         countInBatch++;
                         totalCount++;
 
-                        if (countInBatch === 450) { // O limite do Firebase é 500 operações por Lote
+                        if (countInBatch === 450) { 
                             batches.push(currentBatch.commit());
                             currentBatch = writeBatch(db);
                             countInBatch = 0;
@@ -677,7 +693,7 @@ if (uploadCarteiraForm) {
 
             try {
                 await Promise.all(batches);
-                alert(`✅ Upload da Carteira concluído!\nForam atualizados ${totalCount} clientes de forma segura.`);
+                alert(`✅ Upload da Carteira concluído!\nForam atualizados ${totalCount} contratos únicos.`);
             } catch (err) {
                 console.error("Erro no batch:", err);
                 alert("Ocorreu um erro ao processar uma parte da carteira.");
@@ -701,7 +717,6 @@ function carregarCarteira() {
     
     let eVisaoGeral = (perfilAtual === 'rh' || perfilAtual === 'gerencia' || eAdminRoot);
     
-    // VISÃO DE GESTÃO (Contador Geral)
     if (eVisaoGeral) {
         visaoGestao.classList.remove('hidden');
         onSnapshot(collection(db, "carteira"), (snapshot) => {
@@ -725,7 +740,7 @@ function carregarCarteira() {
                     <div style="background: rgba(0,0,0,0.4); padding: 15px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
                         <strong style="color: #a855f7; font-size: 14px;">👤 ${email}</strong>
                         <div style="display: flex; justify-content: space-between; margin-top: 10px; font-size: 13px; color: #cbd5e1;">
-                            <span>Total Leads: ${s.total}</span>
+                            <span>Total Contratos: ${s.total}</span>
                             <span style="color: #10b981;">Abordados: ${s.contatados} (${pct}%)</span>
                         </div>
                         <div style="background: rgba(255,255,255,0.1); height: 8px; border-radius: 4px; margin-top: 8px; overflow: hidden;">
@@ -738,7 +753,6 @@ function carregarCarteira() {
         });
     }
 
-    // VISÃO DO VENDEDOR (Cards Interativos)
     const qVendedor = query(collection(db, "carteira"), where("emailVendedor", "==", usuarioAtual.email.toLowerCase()));
     onSnapshot(qVendedor, (snapshot) => {
         listaPendentes.innerHTML = "";
@@ -748,19 +762,30 @@ function carregarCarteira() {
             const d = docSnap.data();
             let tags = '';
             
-            if (d.movel) tags += `<span style="background: rgba(59,130,246,0.2); color: #60a5fa; padding: 3px 8px; border-radius: 4px; font-size: 11px;">📱 Móvel: ${d.movel}</span>`;
-            if (d.fixa) tags += `<span style="background: rgba(234,179,8,0.2); color: #facc15; padding: 3px 8px; border-radius: 4px; font-size: 11px;">☎️ Fixa: ${d.fixa}</span>`;
-            if (d.aparelho) tags += `<span style="background: rgba(236,72,153,0.2); color: #f472b6; padding: 3px 8px; border-radius: 4px; font-size: 11px;">📲 Aparelho: ${d.aparelho}</span>`;
+            let mesesVida = calcularMeses(d.dataVenda);
+            let badgeM = mesesVida !== null ? ` <strong style="color:#fff;">(M${mesesVida})</strong>` : '';
+            
+            if (d.movel) tags += `<span style="background: rgba(59,130,246,0.2); color: #60a5fa; padding: 3px 8px; border-radius: 4px; font-size: 11px;">📱 Móvel: ${d.movel}${badgeM}</span>`;
+            if (d.fixa) tags += `<span style="background: rgba(234,179,8,0.2); color: #facc15; padding: 3px 8px; border-radius: 4px; font-size: 11px;">☎️ Fixa: ${d.fixa}${badgeM}</span>`;
+            
+            // Inteligência para o valor do Aparelho
+            if (d.aparelho && d.aparelho.trim() !== '0' && d.aparelho.trim() !== '0,00' && d.aparelho.trim() !== '') {
+                let valorFormatado = d.aparelho.includes('R$') ? d.aparelho : `R$ ${d.aparelho}`;
+                tags += `<span style="background: rgba(236,72,153,0.2); color: #f472b6; padding: 3px 8px; border-radius: 4px; font-size: 11px;">📲 Aparelho: ${valorFormatado}</span>`;
+            }
             
             const btnAcao = !d.contatado 
                 ? `<button class="glass-button small btn-contatar" data-id="${docSnap.id}" style="background: rgba(16, 185, 129, 0.2); color: #10b981; border-color: rgba(16, 185, 129, 0.4); white-space: nowrap;">✅ Já Contatei</button>` 
                 : `<span style="font-size: 12px; color: #10b981; border: 1px solid rgba(16, 185, 129, 0.4); padding: 5px 10px; border-radius: 6px;">✔️ Abordado</span>`;
             
+            let infoExtra = `CNPJ: ${d.cnpj}`;
+            if (d.dataVenda) infoExtra += ` | 📅 Venda: ${d.dataVenda}`;
+            
             const card = `
                 <div style="background: rgba(0,0,0,0.4); padding: 15px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05); display: flex; justify-content: space-between; align-items: center; gap: 15px; flex-wrap: wrap;">
                     <div style="flex: 1;">
                         <strong style="color: #fff; font-size: 15px; display: block; margin-bottom: 5px;">🏢 ${d.razaoSocial}</strong>
-                        <div style="font-size: 12px; color: #94a3b8; margin-bottom: 10px; font-family: monospace;">CNPJ: ${d.cnpj}</div>
+                        <div style="font-size: 12px; color: #94a3b8; margin-bottom: 10px; font-family: monospace;">${infoExtra}</div>
                         <div style="display: flex; gap: 8px; flex-wrap: wrap;">${tags}</div>
                     </div>
                     <div>
@@ -779,7 +804,6 @@ function carregarCarteira() {
         if (listaPendentes.innerHTML === "") listaPendentes.innerHTML = "<p style='color:#94a3b8; font-size:13px; text-align: center; padding: 15px;'>🎉 Você não tem oportunidades pendentes na sua carteira.</p>";
         if (listaContatados.innerHTML === "") listaContatados.innerHTML = "<p style='color:#94a3b8; font-size:13px;'>Nenhum histórico de contatos recente.</p>";
         
-        // Listener para marcar como contatado
         document.querySelectorAll('.btn-contatar').forEach(btn => {
             btn.addEventListener('click', async (e) => {
                 const idDoc = e.target.getAttribute('data-id');
