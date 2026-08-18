@@ -105,20 +105,44 @@
             </div>
         </div>
 
-        <!-- ABA 8: MINHA CARTEIRA (CRM) -->
+        <!-- ABA 8: CARTEIRA (CRM) -->
         <div id="carteira-container" class="hidden">
-            <div id="visao-vendedor-carteira" class="glass-card" style="padding: 25px; margin-bottom: 25px;">
-                <h3 style="margin-bottom: 15px; color: #10b981;">🎯 Clientes para Abordagem</h3>
-                <p style="font-size: 13px; color: #94a3b8; margin-bottom: 15px;">Leads com oportunidades ativas. Após o contato no CRM, marque como contatado para organizar sua fila.</p>
-                <div id="lista-oportunidades-pendentes" style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px;"></div>
-                
-                <h4 style="color: #64748b; border-top: 1px dashed rgba(255,255,255,0.2); padding-top: 15px; margin-top: 10px;">✅ Histórico de Contatados</h4>
-                <div id="lista-oportunidades-contatadas" style="display: flex; flex-direction: column; gap: 10px; margin-top: 10px; opacity: 0.7;"></div>
-            </div>
+            <div class="glass-card" style="padding: 25px; margin-bottom: 25px;">
+                <!-- Cabeçalho Dinâmico -->
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 20px;">
+                    <div>
+                        <h3 style="margin-bottom: 5px; color: #10b981;">🎯 Carteira de Oportunidades</h3>
+                        <p style="font-size: 13px; color: #94a3b8; margin: 0;">Organize a fila de CRM e acompanhe os contatos.</p>
+                    </div>
+                    
+                    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                        <select id="filtro-gestor-carteira" class="input-dark hidden" style="width: auto; padding: 5px 10px; font-size: 13px; border-color: rgba(168, 85, 247, 0.4);">
+                            <option value="resumo">📊 Resumo da Equipe</option>
+                            <option value="minha">👤 Minha Carteira</option>
+                        </select>
 
-            <div id="visao-gestao-carteira" class="hidden glass-card" style="padding: 25px; border-color: rgba(168, 85, 247, 0.4);">
-                <h3 style="margin-bottom: 15px; color: #a855f7;">📊 Acompanhamento de Abordagens (Equipe)</h3>
-                <div id="lista-gestao-carteira" style="display: flex; flex-direction: column; gap: 15px;"></div>
+                        <select id="filtro-qtd-carteira" class="input-dark" style="width: auto; padding: 5px 10px; font-size: 13px;">
+                            <option value="20">Mostrar 20</option>
+                            <option value="50">Mostrar 50</option>
+                            <option value="100">Mostrar 100</option>
+                            <option value="todos">Mostrar Todos</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Visão Gerencial: Barras de Progresso -->
+                <div id="area-resumo-carteira" class="hidden" style="margin-bottom: 20px;">
+                    <div id="lista-gestao-carteira" style="display: flex; flex-direction: column; gap: 15px;"></div>
+                </div>
+
+                <!-- Visão da Lista Interativa (Vendedor ou Gestor detalhando equipe) -->
+                <div id="area-lista-carteira">
+                    <h4 style="color: #fff; margin-bottom: 15px; font-size: 15px;">⏳ Pendentes <span id="badge-pendentes" style="background: rgba(16,185,129,0.2); color: #10b981; padding: 2px 8px; border-radius: 10px; font-size: 12px; margin-left: 8px;">0</span></h4>
+                    <div id="lista-oportunidades-pendentes" style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px;"></div>
+                    
+                    <h4 style="color: #64748b; border-top: 1px dashed rgba(255,255,255,0.2); padding-top: 15px; margin-top: 10px; font-size: 14px;">✅ Contatados <span id="badge-contatados" style="font-size: 12px; margin-left: 8px; font-weight: normal;">(Total: 0)</span></h4>
+                    <div id="lista-oportunidades-contatadas" style="display: flex; flex-direction: column; gap: 10px; margin-top: 10px; opacity: 0.7;"></div>
+                </div>
             </div>
         </div>
 
@@ -207,7 +231,7 @@
             <!-- UPLOAD DE CARTEIRA (CRM) -->
             <div class="glass-card" style="padding: 25px; margin-bottom: 25px; border-color: rgba(16, 185, 129, 0.4);">
                 <h3 style="margin-bottom: 15px; color: #10b981;">📁 Upload: Carteira de Oportunidades</h3>
-                <p style="font-size: 13px; color: #94a3b8; margin-bottom: 15px;">CSV com 6 colunas: E-mail Vendedor, CNPJ, Razão Social, Móvel, Fixa, Aparelho.</p>
+                <p style="font-size: 13px; color: #94a3b8; margin-bottom: 15px;">CSV com 7 colunas: E-mail Vendedor, CNPJ, Razão Social, Data Venda, Móvel, Fixa, Aparelho.</p>
                 <form id="upload-carteira-form">
                     <input type="file" id="arquivo-csv-carteira" accept=".csv" class="input-dark" required style="margin-bottom: 15px;">
                     <button type="submit" class="glass-button" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); width: 100%;">Processar Carteira (Lote)</button>
